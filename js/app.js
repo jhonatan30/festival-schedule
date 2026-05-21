@@ -225,11 +225,16 @@ function toggleSave(id) {
     }
   });
   updateBadge();
-  // Re-render current view to reflect changes, preserving current stage/position
+  // Re-render current view to reflect changes, preserving stage/position and scroll
   if (window.curTab === 'agenda' || window.curTab === 'now' || window.curTab === 'lineup') {
     const c = document.getElementById('content');
     if (c) {
       let savedStage = window.curStage;
+      // Capture scroll position of the active scroll container
+      let scrollSelector = window.curTab === 'now' ? `.s-view[data-s="${savedStage}"]` : '.lineup-list';
+      let scrollEl = c.querySelector(scrollSelector);
+      let savedScroll = scrollEl ? scrollEl.scrollTop : 0;
+
       if (window.curTab === 'agenda') c.innerHTML = renderAgenda();
       else if (window.curTab === 'lineup') c.innerHTML = renderLineup();
       else if (window.curTab === 'now') c.innerHTML = renderNow();
@@ -240,6 +245,9 @@ function toggleSave(id) {
         // Restore the stage position after reinitializing swipe
         if (savedStage > 0) goNowStage(savedStage);
       }
+      // Restore scroll position after re-render
+      let newScrollEl = c.querySelector(scrollSelector);
+      if (newScrollEl) newScrollEl.scrollTop = savedScroll;
     }
   }
   if (wasAdded) {
