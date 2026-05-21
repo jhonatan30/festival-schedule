@@ -77,28 +77,32 @@ function countdownHTML(a, si) {
 function renderNow() {
   let views = '';
   STAGES_LIST.forEach((st, si) => {
-    let acts = getLineupForDay().filter(a => a.stage === st.name);
+    let acts = getLineupForDay()
+      .filter(a => a.stage === st.name)
+      .sort((a, b) => toMin(a.start) - toMin(b.start));
     let nowA = acts.find(a => isNow(a));
-    let upA = acts.filter(a => isUp(a)).sort((a,b) => toMin(a.start) - toMin(b.start));
-    let heroHTML = '';
-    let displayArtist = nowA || upA[0];
+    let upA = acts.filter(a => isUp(a)).sort((a, b) => toMin(a.start) - toMin(b.start));
+    let heroArtist = nowA || upA[0] || null;
     let isLive = !!nowA;
-    if (displayArtist) {
-      let sv = saved.has(displayArtist.id);
-      heroHTML = `<div class="hero"><div class="hero-shine"></div><div class="hero-grid"></div><div class="hero-top"><div class="live-pill"><div class="live-dot ${isLive ? '' : 'inactive'}"></div><span class="live-txt">${isLive ? 'En escena' : 'Próximo'}</span></div><button class="hero-save-btn" data-artist-id="${displayArtist.id}" onclick="toggleSave(${displayArtist.id})"><i class="ti ${sv ? 'ti-heart-filled' : 'ti-heart'}"></i></button></div><div class="hero-name">${displayArtist.name}${displayArtist.extra ? `<span class="hero-extra">${displayArtist.extra}</span>` : ''}</div><div class="hero-sub">${st.name} · ${displayArtist.start} → ${displayArtist.end}</div><div class="hero-tags">${displayArtist.tags.map(t => `<span class="hero-tag">${t}</span>`).join('')}</div>${isLive ? progressHTML(displayArtist, si) : countdownHTML(displayArtist, si)}</div>`;
+    let stageHTML = '';
+    if (acts.length === 0) {
+      stageHTML = `<div class="hero hero-empty"><div class="hero-top"><div class="live-pill" style="background:rgba(255,184,208,.08)"><div style="width:7px;height:7px;border-radius:50%;background:rgba(255,184,208,.25)"></div><span class="live-txt" style="color:rgba(255,184,208,.35)">Sin artistas</span></div></div><div class="hero-name" style="font-size:32px;color:rgba(255,184,208,.3);margin:10px 0 6px">–</div><div class="hero-sub" style="color:rgba(255,184,208,.25)">No hay artistas en este escenario</div></div>`;
     } else {
-      heroHTML = `<div class="hero hero-empty"><div class="hero-top"><div class="live-pill" style="background:rgba(255,184,208,.08)"><div style="width:7px;height:7px;border-radius:50%;background:rgba(255,184,208,.25)"></div><span class="live-txt" style="color:rgba(255,184,208,.35)">Festival finalizado</span></div></div><div class="hero-name" style="font-size:32px;color:rgba(255,184,208,.3);margin:10px 0 6px">–</div><div class="hero-sub" style="color:rgba(255,184,208,.25)">No hay más artistas en este escenario</div></div>`;
+      acts.forEach(a => {
+        const isPast = getEventMinutes(a.end) < 0;
+        const isHero = heroArtist && a.id === heroArtist.id;
+        const sv = saved.has(a.id);
+        if (isHero) {
+          stageHTML += `<div class="hero"><div class="hero-shine"></div><div class="hero-grid"></div><div class="hero-top"><div class="live-pill"><div class="live-dot ${isLive ? '' : 'inactive'}"></div><span class="live-txt">${isLive ? 'En escena' : 'Próximo'}</span></div><button class="hero-save-btn" data-artist-id="${a.id}" onclick="toggleSave(${a.id})"><i class="ti ${sv ? 'ti-heart-filled' : 'ti-heart'}"></i></button></div><div class="hero-name">${a.name}${a.extra ? `<span class="hero-extra">${a.extra}</span>` : ''}</div><div class="hero-sub">${st.name} · ${a.start} → ${a.end}</div><div class="hero-tags">${a.tags.map(t => `<span class="hero-tag">${t}</span>`).join('')}</div>${isLive ? progressHTML(a, si) : countdownHTML(a, si)}</div>`;
+        } else {
+          stageHTML += `<div class="ac ${sv ? 'sv' : ''} ${isPast ? 'passed' : ''}"><div class="ac-tb"><div class="ac-t">${a.start}</div><div class="ac-te">→${a.end}</div></div><div class="ac-b"><div class="ac-n">${a.name}</div><div class="ac-s">${a.tags.join(' · ')}</div></div><button class="ac-btn" data-artist-id="${a.id}" onclick="toggleSave(${a.id})"><i class="ti ${sv ? 'ti-heart-filled' : 'ti-heart'}"></i></button></div>`;
+        }
+      });
+      if (!heroArtist) {
+        stageHTML += `<div class="hero hero-empty"><div class="hero-top"><div class="live-pill" style="background:rgba(255,184,208,.08)"><div style="width:7px;height:7px;border-radius:50%;background:rgba(255,184,208,.25)"></div><span class="live-txt" style="color:rgba(255,184,208,.35)">Festival finalizado</span></div></div><div class="hero-name" style="font-size:32px;color:rgba(255,184,208,.3);margin:10px 0 6px">–</div><div class="hero-sub" style="color:rgba(255,184,208,.25)">No hay más artistas en este escenario</div></div>`;
+      }
     }
-    let nextHTML = '';
-    let allArtistsWithStatus = acts.map(a => ({artist:a,isPassed:getEventMinutes(a.end) < 0}));
-    allArtistsWithStatus.sort((a, b) => {if (a.isPassed && !b.isPassed) return 1; if (!a.isPassed && b.isPassed) return -1; return getEventMinutes(a.artist.start) - getEventMinutes(b.artist.start);});
-    // Filter out the display artist to avoid duplication
-    let filteredArtists = allArtistsWithStatus.filter(item => !displayArtist || item.artist.id !== displayArtist.id);
-    if (filteredArtists.length) {
-      nextHTML = `<div class="next-section-lbl">A continuación</div>`;
-      filteredArtists.forEach(item => {let a = item.artist; let sv = saved.has(a.id); let classes = `ac ${sv ? 'sv' : ''} ${item.isPassed ? 'passed' : ''}`; nextHTML += `<div class="${classes}"><div class="ac-tb"><div class="ac-t">${a.start}</div><div class="ac-te">→${a.end}</div></div><div class="ac-b"><div class="ac-n">${a.name}</div><div class="ac-s">${a.tags.join(' · ')}</div></div><button class="ac-btn" data-artist-id="${a.id}" onclick="toggleSave(${a.id})"><i class="ti ${sv ? 'ti-heart-filled' : 'ti-heart'}"></i></button></div>`;});
-    }
-    views += `<div class="s-view" data-s="${si}">${heroHTML}${nextHTML}</div>`;
+    views += `<div class="s-view" data-s="${si}">${stageHTML}</div>`;
   });
   return `<div class="now-wrap"><div class="dots-row" id="dots"></div><div class="stage-name-lbl" id="snlbl">STAMM</div><div class="swipe-vp" id="svp"><div class="swipe-track" id="strk">${views}</div><div class="sw-hint" id="shint"><i class="ti ti-arrows-left-right" style="font-size:13px"></i> desliza entre escenarios</div></div></div>`;
 }
