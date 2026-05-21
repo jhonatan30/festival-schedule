@@ -29,7 +29,6 @@ window.disableMock = disableMock;
 window.onClockClick = onClockClick;
 window.adjustSimTime = adjustSimTime;
 window.hideConflictToast = hideConflictToast;
-window.showMapStageInfo = showMapStageInfo;
 window.showAgendaRoute = showAgendaRoute;
 window.closeAgendaRoute = closeAgendaRoute;
 window.selectRouteStep = selectRouteStep;
@@ -251,48 +250,6 @@ function renderMapSVG(highlightStage, compact, routeMode) {
   </svg>`;
 }
 
-function renderMap() {
-  return `<div class="map-wrap">
-    <div class="map-header-lbl">Mapa del festival · Corferias</div>
-    ${renderMapSVG(null, false)}
-    <div class="map-info-panel" id="mapInfo">
-      <div class="map-info-empty"><i class="ti ti-hand-click"></i> Toca un escenario para ver detalles</div>
-    </div>
-  </div>`;
-}
-
-function showMapStageInfo(stageName) {
-  const lineup = getLineupForDay();
-  const st = STAGES_LIST.find(s => s.name === stageName);
-  if (!st) return;
-  const nowA = lineup.find(a => a.stage === stageName && isNow(a));
-  const upA  = lineup.filter(a => a.stage === stageName && isUp(a)).sort((a,b) => toMin(a.start)-toMin(b.start))[0];
-  const displayA = nowA || upA;
-  document.querySelectorAll('.map-stage-group').forEach(g => g.classList.remove('selected'));
-  const safeId = 'map-g-' + stageName.replace(/\s+/g,'-').replace(/[^a-zA-Z0-9-]/g,'');
-  const grp = document.getElementById(safeId);
-  if (grp) grp.classList.add('selected');
-  const panel = document.getElementById('mapInfo');
-  if (!panel) return;
-  if (!displayA) {
-    panel.innerHTML = `<div class="map-info-stage-name" style="color:${st.color}">${st.name}</div><div class="map-info-desc">${st.desc}</div><div style="margin-top:10px;font-size:12px;color:rgba(255,184,208,.3)">Escenario finalizado</div>`;
-    return;
-  }
-  const isSaved = saved.has(displayA.id);
-  const liveLabel = nowA ? `<div class="map-info-status-live"><span style="width:6px;height:6px;border-radius:50%;background:var(--primary-accent);display:inline-block;animation:blink 1.3s infinite"></span>EN VIVO</div>` : `<div style="font-size:10px;color:rgba(255,184,208,.38);margin-bottom:5px;font-weight:700;letter-spacing:.5px">PRÓXIMO</div>`;
-  panel.innerHTML = `<div style="display:flex;align-items:flex-start;justify-content:space-between">
-    <div><div class="map-info-stage-name" style="color:${st.color}">${st.name}</div><div class="map-info-desc">${st.desc}</div></div>
-  </div>
-  <div class="map-info-artist">
-    ${liveLabel}
-    <div class="map-info-artist-name">${displayA.name}${displayA.extra?` <span style="font-size:11px;opacity:.5">${displayA.extra}</span>`:''}</div>
-    <div class="map-info-times">${displayA.start} → ${displayA.end}</div>
-    <div class="map-info-tags">${displayA.tags.map(t=>`<span class="map-info-tag">${t}</span>`).join('')}</div>
-  </div>
-  <button class="map-info-save-btn${isSaved?' saved':''}" data-stage="${stageName}" onclick="toggleSave(${displayA.id});showMapStageInfo(this.getAttribute('data-stage'))">
-    <i class="ti ${isSaved?'ti-heart-filled':'ti-heart'}"></i>${isSaved?'Guardado':'Guardar'}
-  </button>`;
-}
 
 function showAgendaRoute() {
   const savedArtists = getLineupForDay().filter(a => saved.has(a.id)).sort((a,b) => toMin(a.start)-toMin(b.start));
@@ -483,7 +440,6 @@ const TAB_META = {
   lineup: { icon: 'ti-list',              name: 'LINEUP' },
   agenda: { icon: 'ti-heart',             name: 'MI AGENDA' },
   stages: { icon: 'ti-building-circus',   name: 'ESCENARIOS' },
-  map:    { icon: 'ti-map-2',             name: 'MAPA' },
 };
 
 function goTab(tab) {
@@ -504,7 +460,6 @@ function goTab(tab) {
   else if (tab === 'lineup') c.innerHTML = renderLineup();
   else if (tab === 'agenda') c.innerHTML = renderAgenda();
   else if (tab === 'stages') c.innerHTML = renderStages();
-  else if (tab === 'map') c.innerHTML = renderMap();
   if (tab === 'now') {
     window.swipeListenersAttached = false;
     initSwipe();
