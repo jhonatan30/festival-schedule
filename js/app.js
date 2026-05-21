@@ -29,6 +29,33 @@ window.disableMock = disableMock;
 window.onClockClick = onClockClick;
 window.adjustSimTime = adjustSimTime;
 window.hideConflictToast = hideConflictToast;
+window.showMapStageInfo = showMapStageInfo;
+window.showAgendaRoute = showAgendaRoute;
+window.closeAgendaRoute = closeAgendaRoute;
+
+// ── Map data constants ──────────────────────────────────────────────────────
+const WALK_MINUTES = {
+  'Stamm|Todalanoche': 3,
+  'BAUM|Stamm': 5,
+  'BAUM|Todalanoche': 8,
+  'BAUM|Páramo': 5,
+  'Páramo|Stamm': 6,
+  'Páramo|Todalanoche': 9,
+  'Páramo|Resident Advisor': 3,
+  'BAUM|Resident Advisor': 4,
+  'Resident Advisor|Stamm': 7,
+  'Resident Advisor|Todalanoche': 10,
+};
+const MAP_LAYOUT = {
+  'Todalanoche':      { x:16,  y:18, w:66,  h:50 },
+  'Stamm':            { x:90,  y:18, w:80,  h:50 },
+  'BAUM':             { x:178, y:18, w:108, h:50 },
+  'Páramo':           { x:138, y:148, w:90, h:50 },
+  'Resident Advisor': { x:248, y:142, w:78, h:50 },
+};
+function walkTime(stageA, stageB) {
+  return WALK_MINUTES[[stageA, stageB].sort().join('|')] || 5;
+}
 
 // ═══════════════════════════════ RENDERIZADO ═══════════════════════════════
 
@@ -98,7 +125,8 @@ function renderAgenda() {
   let liveNow = savedArtists.filter(a => isNow(a));
 
   let liveBar = liveNow.length ? `<div class="live-now-bar"><span class="live-dot" style="width:7px;height:7px;border-radius:50%;background:var(--primary-accent);animation:blink 1.3s infinite;display:inline-block;margin-right:6px;vertical-align:middle"></span>${liveNow.length} set${liveNow.length > 1 ? 's' : ''} en vivo ahora</div>` : '';
-  let body = liveBar + `<div style="padding:12px 16px 8px;font-size:12px;color:rgba(255,184,208,.6)">Tu agenda guardada · ${saved.size} artista${saved.size>1?'s':''}</div>`;
+  let routeBtn = savedArtists.length >= 2 ? `<button class="route-btn" onclick="showAgendaRoute()"><i class="ti ti-route"></i> Ver ruta del día</button>` : '';
+  let body = liveBar + routeBtn + `<div style="padding:12px 16px 8px;font-size:12px;color:rgba(255,184,208,.6)">Tu agenda guardada · ${saved.size} artista${saved.size>1?'s':''}</div>`;
 
   let groups = {};
   savedArtists.forEach(a => {let h = a.start.split(':')[0]; if (!groups[h]) groups[h] = []; groups[h].push(a);});
@@ -168,6 +196,144 @@ function renderStages() {
     </div>`;
   });
   return html;
+}
+
+// ═══════════════════════════════ MAPA ═══════════════════════════════
+
+function renderMapSVG(highlightStage, compact) {
+  const lineup = getLineupForDay();
+  const stagesSVG = STAGES_LIST.map(st => {
+    const pos = MAP_LAYOUT[st.name];
+    if (!pos) return '';
+    const nowA = lineup.find(a => a.stage === st.name && isNow(a));
+    const isSelected = st.name === highlightStage;
+    const cx = pos.x + pos.w / 2;
+    const cy = pos.y + pos.h / 2;
+    const words = st.name.split(' ');
+    let nameTxt = words.length === 1
+      ? `<text x="${cx}" y="${cy+5}" text-anchor="middle" class="map-stage-name">${st.name}</text>`
+      : words.length === 2
+        ? `<text x="${cx}" y="${cy-3}" text-anchor="middle" class="map-stage-name">${words[0]}</text><text x="${cx}" y="${cy+11}" text-anchor="middle" class="map-stage-name">${words[1]}</text>`
+        : `<text x="${cx}" y="${cy-3}" text-anchor="middle" class="map-stage-name">${words.slice(0,2).join(' ')}</text><text x="${cx}" y="${cy+11}" text-anchor="middle" class="map-stage-name">${words.slice(2).join(' ')}</text>`;
+    const safeId = 'map-g-' + st.name.replace(/\s+/g,'-').replace(/[^a-zA-Z0-9-]/g,'');
+    return `<g class="map-stage-group${isSelected?' selected':''}" id="${safeId}" data-stage="${st.name}" onclick="showMapStageInfo(this.getAttribute('data-stage'))">
+      <rect x="${pos.x}" y="${pos.y}" width="${pos.w}" height="${pos.h}" rx="4" fill="${st.color}22" stroke="${st.color}" stroke-width="${isSelected?'2.5':'1.5'}"/>
+      ${nameTxt}
+      ${nowA ? `<circle cx="${pos.x+pos.w-8}" cy="${pos.y+8}" r="5" fill="${st.color}" class="map-live-pulse"/>` : ''}
+    </g>`;
+  }).join('');
+  return `<svg viewBox="0 0 380 215" class="map-svg${compact?' map-svg--compact':''}">
+    <rect x="12" y="10" width="360" height="198" rx="8" fill="rgba(13,27,61,.45)" stroke="rgba(255,184,208,.14)" stroke-width="1.5"/>
+    <text x="192" y="8" text-anchor="middle" class="map-street">CARRERA 40</text>
+    <text x="192" y="214" text-anchor="middle" class="map-street">CARRERA 37</text>
+    <line x1="82" y1="43" x2="90" y2="43" stroke="rgba(255,184,208,.12)" stroke-width="6" stroke-dasharray="2,2"/>
+    <line x1="170" y1="43" x2="178" y2="43" stroke="rgba(255,184,208,.12)" stroke-width="6" stroke-dasharray="2,2"/>
+    <line x1="130" y1="68" x2="183" y2="148" stroke="rgba(255,184,208,.09)" stroke-width="1.5" stroke-dasharray="5,4"/>
+    <line x1="232" y1="68" x2="255" y2="142" stroke="rgba(255,184,208,.09)" stroke-width="1.5" stroke-dasharray="5,4"/>
+    <line x1="228" y1="172" x2="248" y2="165" stroke="rgba(255,184,208,.09)" stroke-width="1.5" stroke-dasharray="5,4"/>
+    <text x="68" y="118" text-anchor="middle" class="map-amenity">Zona de</text>
+    <text x="68" y="129" text-anchor="middle" class="map-amenity">Comidas</text>
+    <text x="120" y="118" text-anchor="middle" class="map-amenity">VIP</text>
+    <text x="120" y="129" text-anchor="middle" class="map-amenity">Lounge</text>
+    ${stagesSVG}
+  </svg>`;
+}
+
+function renderMap() {
+  return `<div class="map-wrap">
+    <div class="map-header-lbl">Mapa del festival · Corferias</div>
+    ${renderMapSVG(null, false)}
+    <div class="map-info-panel" id="mapInfo">
+      <div class="map-info-empty"><i class="ti ti-hand-click"></i> Toca un escenario para ver detalles</div>
+    </div>
+  </div>`;
+}
+
+function showMapStageInfo(stageName) {
+  const lineup = getLineupForDay();
+  const st = STAGES_LIST.find(s => s.name === stageName);
+  if (!st) return;
+  const nowA = lineup.find(a => a.stage === stageName && isNow(a));
+  const upA  = lineup.filter(a => a.stage === stageName && isUp(a)).sort((a,b) => toMin(a.start)-toMin(b.start))[0];
+  const displayA = nowA || upA;
+  document.querySelectorAll('.map-stage-group').forEach(g => g.classList.remove('selected'));
+  const safeId = 'map-g-' + stageName.replace(/\s+/g,'-').replace(/[^a-zA-Z0-9-]/g,'');
+  const grp = document.getElementById(safeId);
+  if (grp) grp.classList.add('selected');
+  const panel = document.getElementById('mapInfo');
+  if (!panel) return;
+  if (!displayA) {
+    panel.innerHTML = `<div class="map-info-stage-name" style="color:${st.color}">${st.name}</div><div class="map-info-desc">${st.desc}</div><div style="margin-top:10px;font-size:12px;color:rgba(255,184,208,.3)">Escenario finalizado</div>`;
+    return;
+  }
+  const isSaved = saved.has(displayA.id);
+  const liveLabel = nowA ? `<div class="map-info-status-live"><span style="width:6px;height:6px;border-radius:50%;background:var(--primary-accent);display:inline-block;animation:blink 1.3s infinite"></span>EN VIVO</div>` : `<div style="font-size:10px;color:rgba(255,184,208,.38);margin-bottom:5px;font-weight:700;letter-spacing:.5px">PRÓXIMO</div>`;
+  panel.innerHTML = `<div style="display:flex;align-items:flex-start;justify-content:space-between">
+    <div><div class="map-info-stage-name" style="color:${st.color}">${st.name}</div><div class="map-info-desc">${st.desc}</div></div>
+  </div>
+  <div class="map-info-artist">
+    ${liveLabel}
+    <div class="map-info-artist-name">${displayA.name}${displayA.extra?` <span style="font-size:11px;opacity:.5">${displayA.extra}</span>`:''}</div>
+    <div class="map-info-times">${displayA.start} → ${displayA.end}</div>
+    <div class="map-info-tags">${displayA.tags.map(t=>`<span class="map-info-tag">${t}</span>`).join('')}</div>
+  </div>
+  <button class="map-info-save-btn${isSaved?' saved':''}" data-stage="${stageName}" onclick="toggleSave(${displayA.id});showMapStageInfo(this.getAttribute('data-stage'))">
+    <i class="ti ${isSaved?'ti-heart-filled':'ti-heart'}"></i>${isSaved?'Guardado':'Guardar'}
+  </button>`;
+}
+
+function showAgendaRoute() {
+  const savedArtists = getLineupForDay().filter(a => saved.has(a.id)).sort((a,b) => toMin(a.start)-toMin(b.start));
+  if (savedArtists.length < 2) return;
+  let timeline = '';
+  savedArtists.forEach((a, i) => {
+    const sc = stageColor(a.stage);
+    const isLive = isNow(a);
+    timeline += `<div class="route-step">
+      <div class="route-step-time">${a.start}</div>
+      <div class="route-step-dot" style="background:${sc}"></div>
+      <div class="route-step-info">
+        ${isLive ? `<div class="map-info-status-live"><span style="width:5px;height:5px;border-radius:50%;background:var(--primary-accent);display:inline-block;animation:blink 1.3s infinite"></span>EN VIVO</div>` : ''}
+        <div class="route-step-artist">${a.name}${a.extra?` <span style="font-size:11px;opacity:.45">${a.extra}</span>`:''}</div>
+        <div class="route-step-stage" style="color:${sc}">${a.stage} · ${a.start} → ${a.end}</div>
+      </div>
+    </div>`;
+    if (i < savedArtists.length - 1) {
+      const next = savedArtists[i+1];
+      if (a.stage !== next.stage) {
+        const mins = walkTime(a.stage, next.stage);
+        timeline += `<div class="route-transfer">
+          <div class="route-transfer-line"></div>
+          <div class="route-transfer-card">
+            <i class="ti ti-walk" style="font-size:13px"></i>
+            <span>Caminar a ${next.stage}</span>
+            <span class="route-transfer-badge">~${mins} min</span>
+          </div>
+        </div>`;
+      } else {
+        timeline += `<div class="route-same-stage">
+          <div class="route-same-line"></div>
+          <span class="route-same-text">Mismo escenario</span>
+        </div>`;
+      }
+    }
+  });
+  const overlay = document.createElement('div');
+  overlay.className = 'route-overlay';
+  overlay.id = 'routeOverlay';
+  overlay.innerHTML = `
+    <div class="route-header">
+      <button class="route-close-btn" onclick="closeAgendaRoute()"><i class="ti ti-arrow-left"></i></button>
+      <span class="route-header-title">Tu ruta del día</span>
+    </div>
+    <div class="route-map-mini">${renderMapSVG(null, true)}</div>
+    <div class="route-timeline">${timeline}</div>`;
+  document.querySelector('.shell').appendChild(overlay);
+}
+
+function closeAgendaRoute() {
+  const overlay = document.getElementById('routeOverlay');
+  if (overlay) overlay.remove();
 }
 
 // ═══════════════════════════════ FUNCIONES PRINCIPALES ═══════════════════════════════
@@ -268,7 +434,7 @@ function updateBadge() {
 
 function goTab(tab) {
   window.curTab = tab;
-  ['now','lineup','agenda','stages'].forEach((t, i) => {
+  ['now','lineup','agenda','stages','map'].forEach((t, i) => {
     document.querySelectorAll('.tab')[i].classList.toggle('active', t === tab);
   });
   if (window.contentUpdateInterval) clearInterval(window.contentUpdateInterval);
@@ -277,6 +443,7 @@ function goTab(tab) {
   else if (tab === 'lineup') c.innerHTML = renderLineup();
   else if (tab === 'agenda') c.innerHTML = renderAgenda();
   else if (tab === 'stages') c.innerHTML = renderStages();
+  else if (tab === 'map') c.innerHTML = renderMap();
   if (tab === 'now') {
     window.swipeListenersAttached = false;
     initSwipe();
