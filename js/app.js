@@ -32,6 +32,7 @@ window.hideConflictToast = hideConflictToast;
 window.showMapStageInfo = showMapStageInfo;
 window.showAgendaRoute = showAgendaRoute;
 window.closeAgendaRoute = closeAgendaRoute;
+window.selectRouteStep = selectRouteStep;
 
 // ── Map data constants ──────────────────────────────────────────────────────
 const WALK_MINUTES = {
@@ -200,7 +201,7 @@ function renderStages() {
 
 // ═══════════════════════════════ MAPA ═══════════════════════════════
 
-function renderMapSVG(highlightStage, compact) {
+function renderMapSVG(highlightStage, compact, routeMode) {
   const lineup = getLineupForDay();
   const stagesSVG = STAGES_LIST.map(st => {
     const pos = MAP_LAYOUT[st.name];
@@ -216,13 +217,21 @@ function renderMapSVG(highlightStage, compact) {
         ? `<text x="${cx}" y="${cy-3}" text-anchor="middle" class="map-stage-name">${words[0]}</text><text x="${cx}" y="${cy+11}" text-anchor="middle" class="map-stage-name">${words[1]}</text>`
         : `<text x="${cx}" y="${cy-3}" text-anchor="middle" class="map-stage-name">${words.slice(0,2).join(' ')}</text><text x="${cx}" y="${cy+11}" text-anchor="middle" class="map-stage-name">${words.slice(2).join(' ')}</text>`;
     const safeId = 'map-g-' + st.name.replace(/\s+/g,'-').replace(/[^a-zA-Z0-9-]/g,'');
-    return `<g class="map-stage-group${isSelected?' selected':''}" id="${safeId}" data-stage="${st.name}" onclick="showMapStageInfo(this.getAttribute('data-stage'))">
+    const interactAttr = routeMode ? '' : ` data-stage="${st.name}" onclick="showMapStageInfo(this.getAttribute('data-stage'))"`;
+    return `<g class="map-stage-group${isSelected?' selected':''}" id="${safeId}"${interactAttr}>
       <rect x="${pos.x}" y="${pos.y}" width="${pos.w}" height="${pos.h}" rx="4" fill="${st.color}22" stroke="${st.color}" stroke-width="${isSelected?'2.5':'1.5'}"/>
       ${nameTxt}
       ${nowA ? `<circle cx="${pos.x+pos.w-8}" cy="${pos.y+8}" r="5" fill="${st.color}" class="map-live-pulse"/>` : ''}
     </g>`;
   }).join('');
-  return `<svg viewBox="0 0 380 215" class="map-svg${compact?' map-svg--compact':''}">
+  const svgClass = `map-svg${compact?' map-svg--compact':''}${routeMode?' route-mode':''}`;
+  const svgId = routeMode ? ' id="routeMapSvg"' : '';
+  return `<svg viewBox="0 0 380 215" class="${svgClass}"${svgId}>
+    <defs>
+      <marker id="routeArrowHead" markerWidth="7" markerHeight="7" refX="5" refY="3.5" orient="auto">
+        <path d="M0,0 L0,7 L7,3.5 z" fill="white" fill-opacity=".75"/>
+      </marker>
+    </defs>
     <rect x="12" y="10" width="360" height="198" rx="8" fill="rgba(13,27,61,.45)" stroke="rgba(255,184,208,.14)" stroke-width="1.5"/>
     <text x="192" y="8" text-anchor="middle" class="map-street">CARRERA 40</text>
     <text x="192" y="214" text-anchor="middle" class="map-street">CARRERA 37</text>
@@ -236,6 +245,7 @@ function renderMapSVG(highlightStage, compact) {
     <text x="120" y="118" text-anchor="middle" class="map-amenity">VIP</text>
     <text x="120" y="129" text-anchor="middle" class="map-amenity">Lounge</text>
     ${stagesSVG}
+    <g id="routeArrow"></g>
   </svg>`;
 }
 
@@ -289,7 +299,7 @@ function showAgendaRoute() {
   savedArtists.forEach((a, i) => {
     const sc = stageColor(a.stage);
     const isLive = isNow(a);
-    timeline += `<div class="route-step">
+    timeline += `<div class="route-step" onclick="selectRouteStep(${i})">
       <div class="route-step-time">${a.start}</div>
       <div class="route-step-dot" style="background:${sc}"></div>
       <div class="route-step-info">
@@ -326,14 +336,48 @@ function showAgendaRoute() {
       <button class="route-close-btn" onclick="closeAgendaRoute()"><i class="ti ti-arrow-left"></i></button>
       <span class="route-header-title">Tu ruta del día</span>
     </div>
-    <div class="route-map-mini">${renderMapSVG(null, true)}</div>
+    <div class="route-map-mini">${renderMapSVG(null, true, true)}</div>
     <div class="route-timeline">${timeline}</div>`;
   document.querySelector('.shell').appendChild(overlay);
+  selectRouteStep(0);
 }
 
 function closeAgendaRoute() {
   const overlay = document.getElementById('routeOverlay');
   if (overlay) overlay.remove();
+}
+
+function selectRouteStep(idx) {
+  const artists = getLineupForDay().filter(a => saved.has(a.id)).sort((a,b) => toMin(a.start)-toMin(b.start));
+  if (!artists[idx]) return;
+  const fromStage = artists[idx].stage;
+  const toStage   = artists[idx + 1] ? artists[idx + 1].stage : null;
+  document.querySelectorAll('#routeOverlay .route-step').forEach((el, i) => {
+    el.classList.toggle('route-step--selected', i === idx);
+  });
+  document.querySelectorAll('#routeMapSvg .map-stage-group').forEach(g => g.classList.remove('route-active'));
+  const safeFrom = 'map-g-' + fromStage.replace(/\s+/g,'-').replace(/[^a-zA-Z0-9-]/g,'');
+  const fromGrp = document.getElementById(safeFrom);
+  if (fromGrp) fromGrp.classList.add('route-active');
+  if (toStage && toStage !== fromStage) {
+    const safeTo = 'map-g-' + toStage.replace(/\s+/g,'-').replace(/[^a-zA-Z0-9-]/g,'');
+    const toGrp = document.getElementById(safeTo);
+    if (toGrp) toGrp.classList.add('route-active');
+  }
+  const arrowEl = document.getElementById('routeArrow');
+  if (!arrowEl) return;
+  if (toStage && toStage !== fromStage) {
+    const fp = MAP_LAYOUT[fromStage], tp = MAP_LAYOUT[toStage];
+    if (fp && tp) {
+      const x1 = fp.x + fp.w/2, y1 = fp.y + fp.h/2;
+      const x2 = tp.x + tp.w/2, y2 = tp.y + tp.h/2;
+      const dx = x2-x1, dy = y2-y1, dist = Math.sqrt(dx*dx+dy*dy);
+      const pad = 22, ux = dx/dist, uy = dy/dist;
+      arrowEl.innerHTML = `<line x1="${(x1+ux*pad).toFixed(1)}" y1="${(y1+uy*pad).toFixed(1)}" x2="${(x2-ux*pad).toFixed(1)}" y2="${(y2-uy*pad).toFixed(1)}" stroke="white" stroke-opacity=".75" stroke-width="1.5" stroke-dasharray="4,3" marker-end="url(#routeArrowHead)"/>`;
+    }
+  } else {
+    arrowEl.innerHTML = '';
+  }
 }
 
 // ═══════════════════════════════ FUNCIONES PRINCIPALES ═══════════════════════════════
