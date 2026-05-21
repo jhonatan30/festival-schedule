@@ -29,19 +29,69 @@
           <div class="logo">Baum <em>11</em></div>
           <div class="hdr-sub">Bogotá · Corferias</div>
         </div>
-        <div style="text-align:right">
-          <div id="clock" onclick="onClockClick()" style="font-family:'Bebas Neue';font-size:36px;font-weight:900;color:var(--primary-accent);cursor:pointer;line-height:1;letter-spacing:-1px">--:--</div>
+        <div style="display:flex;align-items:center;gap:10px">
+          <div id="clock" onclick="onClockClick()" style="font-family:'Bebas Neue';font-size:36px;font-weight:900;color:var(--primary-accent);cursor:pointer;line-height:1;letter-spacing:-1px;-webkit-user-select:none;user-select:none">--:--</div>
+          <button class="ham-btn" id="hamBtn" onclick="openNavSheet()" aria-label="Menú de navegación">
+            <span class="ham-line"></span>
+            <span class="ham-line"></span>
+            <span class="ham-line"></span>
+          </button>
         </div>
       </div>
-
-      <!-- TABS -->
-      <div class="tabs">
-        <button class="tab active" onclick="goTab('now')"><i class="ti ti-player-play-filled"></i> Ahora</button>
-        <button class="tab" onclick="goTab('lineup')"><i class="ti ti-list"></i> Lineup</button>
-        <button class="tab" onclick="goTab('agenda')"><i class="ti ti-heart"></i> <span id="agenda-badge"></span>Mi Agenda</button>
-        <button class="tab" onclick="goTab('stages')"><i class="ti ti-building-circus"></i> Escenarios</button>
-        <button class="tab" onclick="goTab('map')"><i class="ti ti-map-2"></i> Mapa</button>
+      <div class="hdr-section-bar">
+        <i class="ti ti-player-play-filled" id="hdrSectionIcon"></i>
+        <span id="hdrSectionName">AHORA</span>
       </div>
+    </div>
+
+    <!-- NAV BACKDROP -->
+    <div class="nav-backdrop" id="navBackdrop" onclick="closeNavSheet()"></div>
+
+    <!-- NAV SHEET -->
+    <div class="nav-sheet" id="navSheet">
+      <div class="nav-sheet-handle"></div>
+      <nav class="nav-items">
+        <button class="nav-item active" data-tab="now" onclick="goTab('now');closeNavSheet()">
+          <i class="ti ti-player-play-filled nav-item-icon" style="color:#FF1E78"></i>
+          <div class="nav-item-text">
+            <div class="nav-item-name">Ahora</div>
+            <div class="nav-item-desc">Sets en vivo y próximos</div>
+          </div>
+          <i class="ti ti-chevron-right nav-item-arrow"></i>
+        </button>
+        <button class="nav-item" data-tab="lineup" onclick="goTab('lineup');closeNavSheet()">
+          <i class="ti ti-list nav-item-icon" style="color:#7B4FFF"></i>
+          <div class="nav-item-text">
+            <div class="nav-item-name">Lineup</div>
+            <div class="nav-item-desc">Todos los artistas</div>
+          </div>
+          <i class="ti ti-chevron-right nav-item-arrow"></i>
+        </button>
+        <button class="nav-item" data-tab="agenda" onclick="goTab('agenda');closeNavSheet()">
+          <i class="ti ti-heart nav-item-icon" style="color:#E040FB"></i>
+          <div class="nav-item-text">
+            <div class="nav-item-name">Mi Agenda <span id="agenda-badge" class="nav-badge"></span></div>
+            <div class="nav-item-desc">Tus artistas favoritos</div>
+          </div>
+          <i class="ti ti-chevron-right nav-item-arrow"></i>
+        </button>
+        <button class="nav-item" data-tab="stages" onclick="goTab('stages');closeNavSheet()">
+          <i class="ti ti-building-circus nav-item-icon" style="color:#00C9A7"></i>
+          <div class="nav-item-text">
+            <div class="nav-item-name">Escenarios</div>
+            <div class="nav-item-desc">Estado de cada stage</div>
+          </div>
+          <i class="ti ti-chevron-right nav-item-arrow"></i>
+        </button>
+        <button class="nav-item" data-tab="map" onclick="goTab('map');closeNavSheet()">
+          <i class="ti ti-map-2 nav-item-icon" style="color:#FF8C00"></i>
+          <div class="nav-item-text">
+            <div class="nav-item-name">Mapa</div>
+            <div class="nav-item-desc">Corferias · Bogotá</div>
+          </div>
+          <i class="ti ti-chevron-right nav-item-arrow"></i>
+        </button>
+      </nav>
     </div>
 
     <!-- CONTENT -->
