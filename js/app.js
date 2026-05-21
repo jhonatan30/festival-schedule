@@ -33,6 +33,8 @@ window.showMapStageInfo = showMapStageInfo;
 window.showAgendaRoute = showAgendaRoute;
 window.closeAgendaRoute = closeAgendaRoute;
 window.selectRouteStep = selectRouteStep;
+window.openNavSheet = openNavSheet;
+window.closeNavSheet = closeNavSheet;
 
 // ── Map data constants ──────────────────────────────────────────────────────
 const WALK_MINUTES = {
@@ -476,11 +478,26 @@ function updateBadge() {
   if (badge) badge.textContent = saved.size ? `(${saved.size}) ` : '';
 }
 
+const TAB_META = {
+  now:    { icon: 'ti-player-play-filled', name: 'AHORA' },
+  lineup: { icon: 'ti-list',              name: 'LINEUP' },
+  agenda: { icon: 'ti-heart',             name: 'MI AGENDA' },
+  stages: { icon: 'ti-building-circus',   name: 'ESCENARIOS' },
+  map:    { icon: 'ti-map-2',             name: 'MAPA' },
+};
+
 function goTab(tab) {
   window.curTab = tab;
-  ['now','lineup','agenda','stages','map'].forEach((t, i) => {
-    document.querySelectorAll('.tab')[i].classList.toggle('active', t === tab);
+  document.querySelectorAll('.nav-item[data-tab]').forEach(el => {
+    el.classList.toggle('active', el.dataset.tab === tab);
   });
+  const meta = TAB_META[tab];
+  if (meta) {
+    const icon = document.getElementById('hdrSectionIcon');
+    const name = document.getElementById('hdrSectionName');
+    if (icon) icon.className = `ti ${meta.icon}`;
+    if (name) name.textContent = meta.name;
+  }
   if (window.contentUpdateInterval) clearInterval(window.contentUpdateInterval);
   const c = document.getElementById('content');
   if (tab === 'now') c.innerHTML = renderNow();
@@ -493,6 +510,18 @@ function goTab(tab) {
     initSwipe();
   }
   updateBadge();
+}
+
+function openNavSheet() {
+  document.getElementById('navSheet').classList.add('open');
+  document.getElementById('navBackdrop').classList.add('open');
+  document.getElementById('hamBtn').classList.add('open');
+}
+
+function closeNavSheet() {
+  document.getElementById('navSheet').classList.remove('open');
+  document.getElementById('navBackdrop').classList.remove('open');
+  document.getElementById('hamBtn').classList.remove('open');
 }
 
 function setSF(stage) {
