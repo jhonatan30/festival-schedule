@@ -4,13 +4,13 @@
  */
 
 import { LINEUP, LINEUP_DAY23, STAGES_LIST } from './config.js';
-import { saved, festivalDay, mockTime, isMockActive } from './state.js';
+import { saved } from './state.js';
 
 /**
  * Obtiene el lineup del día actual
  */
 export function getLineupForDay() {
-  return festivalDay === 22 ? LINEUP : LINEUP_DAY23;
+  return window.festivalDay === 23 ? LINEUP_DAY23 : LINEUP;
 }
 
 /**
@@ -20,11 +20,12 @@ export function getLineupForDay() {
 export function getEventMinutes(t) {
   let nowDate = new Date();
   let nowMs;
+  const festDay = window.festivalDay || 22;
 
-  if (isMockActive && mockTime !== null) {
-    let mockDate = new Date(nowDate.getFullYear(), nowDate.getMonth(), festivalDay);
-    let mockHour = Math.floor(mockTime / 60);
-    let mockMin = mockTime % 60;
+  if (window.isMockActive && window.mockTime != null) {
+    let mockDate = new Date(nowDate.getFullYear(), nowDate.getMonth(), festDay);
+    let mockHour = Math.floor(window.mockTime / 60);
+    let mockMin = window.mockTime % 60;
     mockDate.setHours(mockHour, mockMin, 0, 0);
     nowMs = mockDate.getTime();
   } else {
@@ -32,8 +33,8 @@ export function getEventMinutes(t) {
   }
 
   let [h, m] = t.split(':').map(Number);
-  let eventDate = new Date(nowDate.getFullYear(), nowDate.getMonth(), festivalDay);
-  if (h < 15) eventDate.setDate(festivalDay + 1);
+  let eventDate = new Date(nowDate.getFullYear(), nowDate.getMonth(), festDay);
+  if (h < 15) eventDate.setDate(festDay + 1);
   eventDate.setHours(h, m, 0, 0);
   let eventMs = eventDate.getTime();
   return (eventMs - nowMs) / 60000;
@@ -117,8 +118,8 @@ export function fmtClock(m) {
  * Obtiene minutos actuales desde midnight
  */
 export function getCurrentMinutes() {
-  if (isMockActive && mockTime !== null) {
-    return mockTime;
+  if (window.isMockActive && window.mockTime != null) {
+    return window.mockTime;
   }
   let now = new Date();
   return now.getHours() * 60 + now.getMinutes();
