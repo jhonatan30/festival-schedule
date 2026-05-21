@@ -366,15 +366,7 @@ function changeFestivalDay(day) {
   document.querySelectorAll('.day-btn').forEach(btn => {
     btn.classList.toggle('active', btn.textContent.includes(day.toString()));
   });
-  const c = document.getElementById('content');
-  if (c) {
-    if (window.curTab === 'now') c.innerHTML = renderNow();
-    else if (window.curTab === 'lineup') c.innerHTML = renderLineup();
-    else if (window.curTab === 'agenda') c.innerHTML = renderAgenda();
-    else if (window.curTab === 'stages') c.innerHTML = renderStages();
-    if (window.curTab === 'now' || window.curTab === 'agenda') { window.swipeListenersAttached = false; initSwipe(); }
-  }
-  updateBadge();
+  goTab(window.curTab || 'now');
 }
 
 function toggleSave(id) {
