@@ -582,11 +582,11 @@ body.day-23 {
   text-align: center;
   padding: 0 0 8px;
   font-family: 'Bebas Neue', sans-serif;
-  font-size: 12px;
-  letter-spacing: 3px;
-  color: rgba(255,184,208,.38);
+  font-size: 22px;
+  letter-spacing: 4px;
+  color: var(--primary-accent);
   flex-shrink: 0;
-  transition: opacity .2s;
+  transition: color .35s, opacity .2s;
 }
 
 /* swipe viewport */
