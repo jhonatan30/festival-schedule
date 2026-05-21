@@ -16,7 +16,6 @@ export let swipeListenersAttached = false;
 // Mock/Testing State
 export let mockTime = null;
 export let isMockActive = false;
-export let clockClickCount = 0;
 
 // Intervals
 export let contentUpdateInterval = null;
@@ -44,7 +43,6 @@ export function resetState() {
   swipeListenersAttached = false;
   mockTime = null;
   isMockActive = false;
-  clockClickCount = 0;
   festivalDay = 22;
   localStorage.clear();
 }
