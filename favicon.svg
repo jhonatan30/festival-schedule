@@ -1,0 +1,25 @@
+<svg viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <radialGradient id="bg" cx="50%" cy="36%" r="78%">
+      <stop offset="0%" stop-color="#1c2f59"/>
+      <stop offset="100%" stop-color="#0a1530"/>
+    </radialGradient>
+  </defs>
+
+  <!-- Background -->
+  <circle cx="100" cy="100" r="95" fill="url(#bg)" stroke="#ffffff" stroke-width="3"/>
+
+  <!-- Beamed eighth notes (music symbol) -->
+  <g fill="#ffffff">
+    <!-- Stems -->
+    <rect x="81" y="62" width="7.5" height="72" rx="3.7"/>
+    <rect x="131" y="52" width="7.5" height="72" rx="3.7"/>
+
+    <!-- Beam connecting the two notes -->
+    <path d="M 80 59 L 139 48 L 139 71 L 80 82 Z"/>
+
+    <!-- Note heads (tilted ovals) -->
+    <ellipse cx="75" cy="134" rx="15.5" ry="11.5" transform="rotate(-18 75 134)"/>
+    <ellipse cx="125" cy="124" rx="15.5" ry="11.5" transform="rotate(-18 125 124)"/>
+  </g>
+</svg>

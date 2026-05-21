@@ -148,10 +148,12 @@ export function hasConflict(a) {
  * Obtiene el artista con el que hay conflicto
  */
 export function getConflictingArtist(a) {
-  return [...saved].find(sid => {
+  let conflictingId = [...saved].find(sid => {
     if (sid === a.id) return false;
     let b = getLineupForDay().find(x => x.id === sid);
     if (!b) return false;
     return toMin(a.start) < toMin(b.end) && toMin(a.end) > toMin(b.start);
   });
+  if (!conflictingId) return null;
+  return getLineupForDay().find(x => x.id === conflictingId);
 }

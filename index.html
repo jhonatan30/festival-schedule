@@ -4,12 +4,13 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
   <title>Baum Festival 11</title>
+  <link rel="icon" type="image/svg+xml" href="favicon.svg">
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/tabler-icons.min.css">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="css/style.css">
 </head>
-<body>
+<body class="day-22">
   <div class="shell">
     <!-- DISCLAIMER BANNER -->
     <div class="disclaimer-banner">
@@ -30,14 +31,7 @@
         </div>
         <div style="text-align:right">
           <div id="clock" onclick="onClockClick()" style="font-family:'Bebas Neue';font-size:36px;font-weight:900;color:var(--primary-accent);cursor:pointer;line-height:1;letter-spacing:-1px">--:--</div>
-          <div id="headerDate" style="font-size:11px;color:rgba(255,184,208,.5);margin-top:2px;letter-spacing:.5px;text-transform:uppercase">Vie 22 · Mayo</div>
         </div>
-      </div>
-
-      <!-- DAY SELECTOR -->
-      <div class="day-selector">
-        <button class="day-btn active" onclick="changeFestivalDay(22)">Vie 22</button>
-        <button class="day-btn" onclick="changeFestivalDay(23)">Sáb 23</button>
       </div>
 
       <!-- TABS -->
@@ -51,6 +45,12 @@
 
     <!-- CONTENT -->
     <div class="content" id="content"></div>
+
+    <!-- DAY SELECTOR FOOTER -->
+    <div class="day-selector-footer">
+      <button class="day-btn active" onclick="changeFestivalDay(22)">Vie 22</button>
+      <button class="day-btn" onclick="changeFestivalDay(23)">Sáb 23</button>
+    </div>
 
     <!-- LEGAL MODAL -->
     <div class="legal-modal" id="legalModal">
@@ -70,7 +70,7 @@
     </div>
 
     <!-- CONFLICT TOAST -->
-    <div class="conflict-toast" id="conflictToast">
+    <div class="conflict-toast hidden" id="conflictToast">
       <div class="conflict-toast-content">
         <i class="ti ti-alert-circle" style="font-size:18px"></i>
         <div>

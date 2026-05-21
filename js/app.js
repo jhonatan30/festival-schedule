@@ -27,6 +27,7 @@ window.closeTestMenu = closeTestMenu;
 window.setMockTime = setMockTime;
 window.disableMock = disableMock;
 window.onClockClick = onClockClick;
+window.hideConflictToast = hideConflictToast;
 
 // ═══════════════════════════════ RENDERIZADO ═══════════════════════════════
 
@@ -61,9 +62,11 @@ function renderNow() {
     let nextHTML = '';
     let allArtistsWithStatus = acts.map(a => ({artist:a,isPassed:getEventMinutes(a.end) < 0}));
     allArtistsWithStatus.sort((a, b) => {if (a.isPassed && !b.isPassed) return 1; if (!a.isPassed && b.isPassed) return -1; return getEventMinutes(a.artist.start) - getEventMinutes(b.artist.start);});
-    if (allArtistsWithStatus.length) {
+    // Filter out the display artist to avoid duplication
+    let filteredArtists = allArtistsWithStatus.filter(item => !displayArtist || item.artist.id !== displayArtist.id);
+    if (filteredArtists.length) {
       nextHTML = `<div class="next-section-lbl">A continuación</div>`;
-      allArtistsWithStatus.forEach(item => {let a = item.artist; let sv = saved.has(a.id); let classes = `ac ${sv ? 'sv' : ''} ${item.isPassed ? 'passed' : ''}`; nextHTML += `<div class="${classes}"><div class="ac-tb"><div class="ac-t">${a.start}</div><div class="ac-te">→${a.end}</div></div><div class="ac-b"><div class="ac-n">${a.name}</div><div class="ac-s">${a.tags.join(' · ')}</div></div><button class="ac-btn" data-artist-id="${a.id}" onclick="toggleSave(${a.id})"><i class="ti ${sv ? 'ti-heart-filled' : 'ti-heart'}"></i></button></div>`;});
+      filteredArtists.forEach(item => {let a = item.artist; let sv = saved.has(a.id); let classes = `ac ${sv ? 'sv' : ''} ${item.isPassed ? 'passed' : ''}`; nextHTML += `<div class="${classes}"><div class="ac-tb"><div class="ac-t">${a.start}</div><div class="ac-te">→${a.end}</div></div><div class="ac-b"><div class="ac-n">${a.name}</div><div class="ac-s">${a.tags.join(' · ')}</div></div><button class="ac-btn" data-artist-id="${a.id}" onclick="toggleSave(${a.id})"><i class="ti ${sv ? 'ti-heart-filled' : 'ti-heart'}"></i></button></div>`;});
     }
     views += `<div class="s-view" data-s="${si}">${heroHTML}${nextHTML}</div>`;
   });
@@ -72,80 +75,118 @@ function renderNow() {
 
 function renderLineup() {
   const stagesOpts = ['Todos', ...STAGES_LIST.map(s => s.name)];
-  let pills = stagesOpts.map(s => `<button class="sf-pill ${stageFilter === s ? 'active' : ''}" onclick="setSF('${s}')">${s}</button>`).join('');
-  let filtered = stageFilter === 'Todos' ? getLineupForDay() : getLineupForDay().filter(a => a.stage === stageFilter);
+  let currentFilter = window.stageFilter || stageFilter || 'Todos';
+  let pills = stagesOpts.map(s => `<button class="sf-pill ${currentFilter === s ? 'active' : ''}" onclick="setSF('${s}')">${s}</button>`).join('');
+  let filtered = currentFilter === 'Todos' ? getLineupForDay() : getLineupForDay().filter(a => a.stage === currentFilter);
   let sorted = [...filtered].sort((a,b) => toMin(a.start) - toMin(b.start));
   let liveNow = getLineupForDay().filter(a => isNow(a));
   let groups = {};
   sorted.forEach(a => {let h = a.start.split(':')[0]; if (!groups[h]) groups[h] = []; groups[h].push(a);});
   let conflicts = [...saved].filter(id => hasConflict(getLineupForDay().find(a => a.id === id)));
   let liveBar = liveNow.length ? `<div class="live-now-bar"><span class="live-dot" style="width:7px;height:7px;border-radius:50%;background:var(--primary-accent);animation:blink 1.3s infinite;display:inline-block;margin-right:6px;vertical-align:middle"></span>${liveNow.length} set${liveNow.length > 1 ? 's' : ''} en vivo ahora</div>` : '';
-  let body = liveBar + `<div class="disclaimer-box">ℹ️ Esta es una guía no oficial. Los horarios pueden cambiar sin previo aviso.</div>`;
+  let body = liveBar;
   let hours = Object.keys(groups).sort((a,b) => {let ah = parseInt(a) < 15 ? parseInt(a)+24 : parseInt(a); let bh = parseInt(b) < 15 ? parseInt(b)+24 : parseInt(b); return ah - bh;});
-  hours.forEach(h => {body += `<div class="time-divider"><span class="time-divider-lbl">${h}:00</span><div class="time-divider-line"></div></div>`; groups[h].forEach(a => {let sv = saved.has(a.id), np = isNow(a), conf = hasConflict(a); let sc = stageColor(a.stage); let badges = ''; if (np) badges += `<span class="badge-live">En vivo · ${fmtMin(remMin(a))}</span>`; if (conf) badges += `<span class="badge-conflict">⚡ Conflicto</span>`; body += `<div class="lc ${sv ? 'sv' : ''} ${np ? 'np' : ''}" style="${np ? '--np-c:'+sc : ''}"><div class="lc-tb"><div class="lc-ts">${a.start}</div><div class="lc-te">→${a.end}</div></div><div class="lc-b"><div class="lc-n">${a.name}</div><div class="lc-stg" style="color:${sc}">${a.stage}</div><div class="lc-row">${badges}${a.tags.map(t => `<span class="lc-tag">${t}</span>`).join('')}</div></div><button class="lc-sv-btn ${sv ? 'on' : ''}" data-artist-id="${a.id}" onclick="toggleSave(${a.id})"><i class="ti ${sv ? 'ti-heart-filled' : 'ti-heart'}"></i></button></div>`;});});
+  hours.forEach(h => {body += `<div class="time-divider"><span class="time-divider-lbl">${h}:00</span><div class="time-divider-line"></div></div>`; groups[h].forEach(a => {let sv = saved.has(a.id), np = isNow(a), conf = hasConflict(a); let sc = stageColor(a.stage); let stageSafe = a.stage.toLowerCase().replace(/\s+/g, '-'); let badges = ''; if (np) badges += `<span class="badge-live">En vivo · ${fmtMin(remMin(a))}</span>`; if (conf) badges += `<span class="badge-conflict">⚡ Conflicto</span>`; body += `<div class="lc ${sv ? 'sv' : ''} ${np ? 'np' : ''} stage-${stageSafe}" style="${np ? '--np-c:'+sc : ''}; --stage-border-color: ${sc}"><div class="lc-tb"><div class="lc-ts">${a.start}</div><div class="lc-te">→${a.end}</div></div><div class="lc-b"><div class="lc-n">${a.name}</div><div class="lc-stg" style="color:${sc}">${a.stage}</div><div class="lc-row">${badges}${a.tags.map(t => `<span class="lc-tag">${t}</span>`).join('')}</div></div><button class="lc-sv-btn ${sv ? 'on' : ''}" data-artist-id="${a.id}" onclick="toggleSave(${a.id})"><i class="ti ${sv ? 'ti-heart-filled' : 'ti-heart'}"></i></button></div>`;});});
   return `<div class="lineup-wrap"><div class="stage-filter-bar">${pills}</div><div class="lineup-list">${body}</div></div>`;
 }
 
 function renderAgenda() {
   if (!saved.size) {return `<div class="agenda-wrap"><div class="empty-state"><i class="ti ti-heart"></i><p>Nada guardado todavía.<br>Toca ♥ en cualquier artista<br>para armar tu lineup personal.</p></div></div>`;}
-  let views = '';
-  let savedArtists = getLineupForDay().filter(a => saved.has(a.id));
-  STAGES_LIST.forEach((st, si) => {
-    let acts = savedArtists.filter(a => a.stage === st.name).sort((a,b) => toMin(a.start) - toMin(b.start));
-    if (!acts.length) {
-      views += `<div class="s-view" data-s="${si}"><div class="hero hero-empty"><div class="hero-top"><div class="live-pill" style="background:rgba(var(--primary-light-rgb),.08)"><div style="width:7px;height:7px;border-radius:50%;background:rgba(var(--primary-light-rgb),.25)"></div><span class="live-txt" style="color:rgba(var(--primary-light-rgb),.35)">Sin artistas guardados</span></div></div><div class="hero-name" style="font-size:32px;color:rgba(var(--primary-light-rgb),.3);margin:10px 0 6px">–</div><div class="hero-sub" style="color:rgba(var(--primary-light-rgb),.25)">Guarda artistas de ${st.name} a tu agenda</div></div></div>`;
-      return;
-    }
-    let nowA = acts.find(a => isNow(a));
-    let upA = acts.filter(a => isUp(a)).sort((a,b) => toMin(a.start) - toMin(b.start));
-    let displayArtist = nowA || upA[0];
-    let isLive = !!nowA;
-    let heroHTML = '';
-    if (displayArtist) {
-      let sv = saved.has(displayArtist.id);
-      heroHTML = `<div class="hero"><div class="hero-shine"></div><div class="hero-grid"></div><div class="hero-top"><div class="live-pill"><div class="live-dot ${isLive ? '' : 'inactive'}"></div><span class="live-txt">${isLive ? 'En escena' : 'Próximo en tu agenda'}</span></div><button class="hero-save-btn" data-artist-id="${displayArtist.id}" onclick="toggleSave(${displayArtist.id})"><i class="ti ${sv ? 'ti-heart-filled' : 'ti-heart'}"></i></button></div><div class="hero-name">${displayArtist.name}${displayArtist.extra ? `<span class="hero-extra">${displayArtist.extra}</span>` : ''}</div><div class="hero-sub">${st.name} · ${displayArtist.start} → ${displayArtist.end}</div><div class="hero-tags">${displayArtist.tags.map(t => `<span class="hero-tag">${t}</span>`).join('')}</div>${isLive ? progressHTML(displayArtist, si) : countdownHTML(displayArtist, si)}</div>`;
-    }
-    let nextHTML = '';
-    let allArtistsWithStatus = acts.map(a => ({artist:a,isPassed:getEventMinutes(a.end) < 0}));
-    allArtistsWithStatus.sort((a, b) => {if (a.isPassed && !b.isPassed) return 1; if (!a.isPassed && b.isPassed) return -1; return getEventMinutes(a.artist.start) - getEventMinutes(b.artist.start);});
-    if (allArtistsWithStatus.length) {
-      nextHTML = `<div class="next-section-lbl">Tu lineup en ${st.name}</div>`;
-      allArtistsWithStatus.forEach(item => {let a = item.artist; let sv = saved.has(a.id); let hasConf = hasConflict(a); let classes = `ac ${sv ? 'sv' : ''} ${item.isPassed ? 'passed' : ''} ${hasConf ? 'conflict' : ''}`; nextHTML += `<div class="${classes}" ${hasConf ? 'style="outline:1px solid #FFD700"' : ''}><div class="ac-tb"><div class="ac-t">${a.start}</div><div class="ac-te">→${a.end}</div></div><div class="ac-b"><div class="ac-n">${a.name}</div><div class="ac-s">${hasConf ? '⚡ Conflicto · ' : ''}${a.tags.join(' · ')}</div></div><button class="ac-btn" data-artist-id="${a.id}" onclick="toggleSave(${a.id})"><i class="ti ${sv ? 'ti-heart-filled' : 'ti-heart'}"></i></button></div>`;});
-    }
-    views += `<div class="s-view" data-s="${si}">${heroHTML}${nextHTML}</div>`;
+
+  let savedArtists = getLineupForDay().filter(a => saved.has(a.id)).sort((a,b) => toMin(a.start) - toMin(b.start));
+  let liveNow = savedArtists.filter(a => isNow(a));
+
+  let liveBar = liveNow.length ? `<div class="live-now-bar"><span class="live-dot" style="width:7px;height:7px;border-radius:50%;background:var(--primary-accent);animation:blink 1.3s infinite;display:inline-block;margin-right:6px;vertical-align:middle"></span>${liveNow.length} set${liveNow.length > 1 ? 's' : ''} en vivo ahora</div>` : '';
+  let body = liveBar + `<div style="padding:12px 16px 8px;font-size:12px;color:rgba(255,184,208,.6)">Tu agenda guardada · ${saved.size} artista${saved.size>1?'s':''}</div>`;
+
+  let groups = {};
+  savedArtists.forEach(a => {let h = a.start.split(':')[0]; if (!groups[h]) groups[h] = []; groups[h].push(a);});
+  let hours = Object.keys(groups).sort((a,b) => {let ah = parseInt(a) < 15 ? parseInt(a)+24 : parseInt(a); let bh = parseInt(b) < 15 ? parseInt(b)+24 : parseInt(b); return ah - bh;});
+
+  hours.forEach(h => {
+    body += `<div class="time-divider"><span class="time-divider-lbl">${h}:00</span><div class="time-divider-line"></div></div>`;
+    groups[h].forEach(a => {
+      let sv = saved.has(a.id), np = isNow(a), conf = hasConflict(a);
+      let sc = stageColor(a.stage);
+      let stageSafe = a.stage.toLowerCase().replace(/\s+/g, '-');
+      let badges = '';
+      if (np) badges += `<span class="badge-live">En vivo · ${fmtMin(remMin(a))}</span>`;
+      if (conf) badges += `<span class="badge-conflict">⚡ Conflicto</span>`;
+      body += `<div class="lc ${sv ? 'sv' : ''} ${np ? 'np' : ''} stage-${stageSafe}" style="${np ? '--np-c:'+sc : ''}; --stage-border-color: ${sc}"><div class="lc-tb"><div class="lc-ts">${a.start}</div><div class="lc-te">→${a.end}</div></div><div class="lc-b"><div class="lc-n">${a.name}</div><div class="lc-stg" style="color:${sc}">${a.stage}</div><div class="lc-row">${badges}${a.tags.map(t => `<span class="lc-tag">${t}</span>`).join('')}</div></div><button class="lc-sv-btn ${sv ? 'on' : ''}" data-artist-id="${a.id}" onclick="toggleSave(${a.id})"><i class="ti ${sv ? 'ti-heart-filled' : 'ti-heart'}"></i></button></div>`;
+    });
   });
-  return `<div class="now-wrap"><div class="disclaimer-box" style="margin:12px 16px 8px;font-size:12px">ℹ️ Tu agenda guardada · ${saved.size} artista${saved.size>1?'s':''} seleccionado${saved.size>1?'s':''}<br>Desliza para ver por escenario</div><div class="dots-row" id="dots"></div><div class="stage-name-lbl" id="snlbl">STAMM</div><div class="swipe-vp" id="svp"><div class="swipe-track" id="strk">${views}</div><div class="sw-hint" id="shint"><i class="ti ti-arrows-left-right" style="font-size:13px"></i> desliza entre escenarios</div></div></div>`;
+
+  return `<div class="lineup-wrap"><div class="lineup-list">${body}</div></div>`;
 }
 
 function renderStages() {
-  let html = `<div class="stages-wrap"><div class="disclaimer-box">ℹ️ Información de escenarios sujeta a cambios. Consulta la web oficial para detalles.</div><div class="sec-lbl" style="padding-top:4px">Escenarios activos</div>`;
+  let html = `<div class="stages-wrap"><div class="disclaimer-box">ℹ️ Información de escenarios sujeta a cambios. Consulta la web oficial para detalles.</div><div class="sec-lbl" style="padding-top:4px">Escenarios del festival</div>`;
   STAGES_LIST.forEach((st, si) => {
     let acts = getLineupForDay().filter(a => a.stage === st.name);
     let nowA = acts.find(a => isNow(a));
     let upA = acts.filter(a => isUp(a)).sort((a,b) => toMin(a.start) - toMin(b.start));
+    let nextArtist = upA[0];
     let p = nowA ? pct(nowA) : 0;
     let rem = nowA ? remMin(nowA) : 0;
-    let svHere = [...saved].filter(id => getLineupForDay().find(a => a.id === id && a.stage === st.name)).length;
-    let nextArtist = nowA ? upA[0] : upA[0];
     let timeUntilNext = nextArtist ? Math.max(0, getEventMinutes(nextArtist.start)) : 0;
-    html += `<div class="stage-card" style="background:${st.color}" onclick="goNowStage(${si})"><div class="sc-shine"></div><div class="sc-grid"></div><div class="sc-top"><div><div class="sc-name">${st.name}</div><div class="sc-desc">${st.desc}</div>${svHere ? `<div class="sc-saved-badge" style="margin-top:4px">♥ ${svHere} guardado${svHere>1?'s':''}</div>` : ''}</div><div class="sc-badge" style="background:rgba(0,0,0,.15)"><div class="sc-badge-dot"></div>Escenario</div></div><div class="sc-bottom">${nowA ? `<div class="sc-now-box"><div class="sc-now-name">${nowA.name}</div><div class="sc-now-time" id="st-now-${si}">${fmtMin(rem)}</div></div>` : `<div class="sc-now-box" style="opacity:.65"><div class="sc-now-micro">Próximo en</div><div class="sc-now-name" id="st-next-${si}" style="font-size:14px;font-weight:700">${nextArtist ? fmtMin(timeUntilNext) : '–'}</div></div>`}${nowA ? `<div class="sc-prog-outer"><div class="sc-prog-fill" id="st-bar-${si}" style="width:${p}%"></div></div><div class="sc-meta"><span class="sc-meta-txt">${nowA.start}</span><span class="sc-meta-center" id="st-meta-${si}">${fmtMin(rem)} restante · ${p}%</span><span class="sc-meta-txt">${nowA.end}</span></div>` : ''}</div></div>`;
+    let svHere = [...saved].filter(id => getLineupForDay().find(a => a.id === id && a.stage === st.name)).length;
+    let status = nowA ? 'EN VIVO' : (nextArtist ? 'PRÓXIMO' : 'FINALIZADO');
+
+    html += `<div class="stage-card" style="--stage-color:${st.color};background:${st.color}">
+      <div class="sc-header">
+        <div class="sc-title-group">
+          <div class="sc-name">${st.name}</div>
+          <div class="sc-desc">${st.desc}</div>
+        </div>
+        <div class="sc-status-badge ${status.toLowerCase()}">${status}</div>
+      </div>
+      <div class="sc-content">
+        ${nowA ? `
+          <div class="sc-now-playing">
+            <div class="sc-artist-name">${nowA.name}</div>
+            <div class="sc-progress">
+              <div class="sc-progress-bar"><div class="sc-progress-fill" id="st-bar-${si}" style="width:${p}%"></div></div>
+              <div class="sc-progress-text">${fmtMin(elMin(nowA))} tocado · ${fmtMin(rem)} restante (${p}%)</div>
+            </div>
+            <div class="sc-times"><span>${nowA.start}</span> - <span>${nowA.end}</span></div>
+          </div>
+        ` : (nextArtist ? `
+          <div class="sc-next-playing">
+            <div class="sc-next-label">Próximo artista</div>
+            <div class="sc-artist-name">${nextArtist.name}</div>
+            <div class="sc-next-time">En ${fmtMin(timeUntilNext)}</div>
+            <div class="sc-times"><span>${nextArtist.start}</span> - <span>${nextArtist.end}</span></div>
+          </div>
+        ` : `
+          <div class="sc-finished">
+            <div class="sc-finished-text">Este escenario ha finalizado sus presentaciones</div>
+          </div>
+        `)}
+      </div>
+      ${svHere ? `<div class="sc-saved-info">♥ ${svHere} artista${svHere>1?'s':''} guardado${svHere>1?'s':''}</div>` : ''}
+    </div>`;
   });
-  html += `<div class="venue-card">📍 <strong>Corferias</strong> · Cra 40 #22C-67, Bogotá<br>🕓 Apertura puertas: 15:00<br>🔞 Evento para mayores de 18 años<br>🎟 <a href="https://www.ticketmaster.com.co" target="_blank" style="color:var(--primary-accent);font-weight:700;text-decoration:none">ticketmaster.com.co ↗</a></div></div>`;
+  html += `<div class="venue-card"><div class="venue-title">📍 Ubicación del evento</div><div class="venue-detail"><strong>Corferias</strong><br>Cra 40 #22C-67, Bogotá</div><div class="venue-detail">🕓 Puertas abren a las <strong>15:00</strong></div><div class="venue-detail">🔞 Evento para mayores de 18 años</div><div class="venue-detail"><a href="https://www.ticketmaster.com.co" target="_blank" class="venue-link">🎟 Comprar entradas en Ticketmaster ↗</a></div></div></div>`;
   return html;
 }
 
 // ═══════════════════════════════ FUNCIONES PRINCIPALES ═══════════════════════════════
 
-function changeFestivalDay(day) {
-  window.festivalDay = day;
-  window.curStage = 0;
-  document.body.classList.remove('day-22', 'day-23');
-  document.body.classList.add(`day-${day}`);
+function setDayStyles(day) {
   let dayAccent = day === 22 ? '#FF1E78' : '#00D9FF';
   let dayRgb = day === 22 ? '255,184,208' : '0,217,255';
   document.documentElement.style.setProperty('--primary-accent', dayAccent);
   document.documentElement.style.setProperty('--primary-light-rgb', dayRgb);
   document.documentElement.style.setProperty('--accent-live', dayAccent);
+}
+
+function changeFestivalDay(day) {
+  window.festivalDay = day;
+  window.curStage = 0;
+  window.stageFilter = 'Todos';
+  document.body.classList.remove('day-22', 'day-23');
+  document.body.classList.add(`day-${day}`);
+  setDayStyles(day);
   let dayName = day === 22 ? 'Vie 22' : 'Sab 23';
   let headerDate = document.getElementById('headerDate');
   if (headerDate) headerDate.textContent = dayName + ' · Mayo';
@@ -184,6 +225,23 @@ function toggleSave(id) {
     }
   });
   updateBadge();
+  // Re-render current view to reflect changes, preserving current stage/position
+  if (window.curTab === 'agenda' || window.curTab === 'now' || window.curTab === 'lineup') {
+    const c = document.getElementById('content');
+    if (c) {
+      let savedStage = window.curStage;
+      if (window.curTab === 'agenda') c.innerHTML = renderAgenda();
+      else if (window.curTab === 'lineup') c.innerHTML = renderLineup();
+      else if (window.curTab === 'now') c.innerHTML = renderNow();
+
+      if (window.curTab === 'now') {
+        window.swipeListenersAttached = false;
+        initSwipe();
+        // Restore the stage position after reinitializing swipe
+        if (savedStage > 0) goNowStage(savedStage);
+      }
+    }
+  }
   if (wasAdded) {
     let art = getLineupForDay().find(a => a.id === id);
     if (art) {
@@ -211,7 +269,7 @@ function goTab(tab) {
   else if (tab === 'lineup') c.innerHTML = renderLineup();
   else if (tab === 'agenda') c.innerHTML = renderAgenda();
   else if (tab === 'stages') c.innerHTML = renderStages();
-  if (tab === 'now' || tab === 'agenda') {
+  if (tab === 'now') {
     window.swipeListenersAttached = false;
     initSwipe();
   }
@@ -220,7 +278,8 @@ function goTab(tab) {
 
 function setSF(stage) {
   window.stageFilter = stage;
-  document.getElementById('content').innerHTML = renderLineup();
+  const c = document.getElementById('content');
+  if (c) c.innerHTML = renderLineup();
 }
 
 function goNowStage(si) {
@@ -231,7 +290,8 @@ function goNowStage(si) {
     document.documentElement.style.setProperty('--primary-accent', stageColor);
     document.documentElement.style.setProperty('--primary-light-rgb', stageColor.includes('00D9FF') ? '0,217,255' : '255,184,208');
   }
-  document.getElementById('snlbl').textContent = currentStage.name;
+  let snlbl = document.getElementById('snlbl');
+  if (snlbl) snlbl.textContent = currentStage.name;
   document.querySelectorAll('.dot').forEach((d, i) => d.classList.toggle('active', i === si));
   let strk = document.getElementById('strk');
   if (strk) strk.style.transform = `translateX(calc(-${si} * 100%))`;
@@ -242,10 +302,29 @@ function initSwipe() {
   window.swipeListenersAttached = true;
   let svp = document.getElementById('svp');
   if (!svp) return;
-  let startX = 0, currentX = 0;
+  let startX = 0, currentX = 0, isMouseDown = false;
+
+  // Touch support
   svp.addEventListener('touchstart', e => {startX = e.touches[0].clientX; currentX = startX;}, {passive: true});
   svp.addEventListener('touchmove', e => {currentX = e.touches[0].clientX;}, {passive: true});
-  svp.addEventListener('touchend', () => {
+  svp.addEventListener('touchend', handleSwipeEnd);
+
+  // Mouse support
+  svp.addEventListener('mousedown', e => {isMouseDown = true; startX = e.clientX; currentX = startX;});
+  svp.addEventListener('mousemove', e => {if (isMouseDown) currentX = e.clientX;});
+  svp.addEventListener('mouseup', handleSwipeEnd);
+  svp.addEventListener('mouseleave', () => {isMouseDown = false;});
+
+  // Keyboard support
+  document.addEventListener('keydown', e => {
+    if (window.curTab === 'now' || window.curTab === 'agenda') {
+      if (e.key === 'ArrowLeft' && window.curStage < STAGES_LIST.length - 1) goNowStage(window.curStage + 1);
+      if (e.key === 'ArrowRight' && window.curStage > 0) goNowStage(window.curStage - 1);
+    }
+  });
+
+  function handleSwipeEnd() {
+    isMouseDown = false;
     let diff = startX - currentX;
     if (Math.abs(diff) > 50) {
       if (diff > 0 && window.curStage < STAGES_LIST.length - 1) {
@@ -254,7 +333,8 @@ function initSwipe() {
         goNowStage(window.curStage - 1);
       }
     }
-  });
+  }
+
   let dots = document.getElementById('dots');
   if (dots) {
     dots.innerHTML = STAGES_LIST.map((_, i) => `<div class="dot ${i === window.curStage ? 'active' : ''}" onclick="goNowStage(${i})"></div>`).join('');
@@ -389,6 +469,9 @@ document.getElementById('testHour').addEventListener('change', updateDisplay);
 document.getElementById('testMin').addEventListener('change', updateDisplay);
 
 document.body.classList.add(`day-${window.festivalDay}`);
+setDayStyles(window.festivalDay);
+window.curStage = 0;
+window.curTab = 'now';
 updateClock();
 goTab('now');
 updateBadge();
