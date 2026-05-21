@@ -350,24 +350,24 @@ function closeAgendaRoute() {
 function selectRouteStep(idx) {
   const artists = getLineupForDay().filter(a => saved.has(a.id)).sort((a,b) => toMin(a.start)-toMin(b.start));
   if (!artists[idx]) return;
-  const fromStage = artists[idx].stage;
-  const toStage   = artists[idx + 1] ? artists[idx + 1].stage : null;
+  const currentStage = artists[idx].stage;
+  const prevStage    = idx > 0 ? artists[idx - 1].stage : null;
   document.querySelectorAll('#routeOverlay .route-step').forEach((el, i) => {
     el.classList.toggle('route-step--selected', i === idx);
   });
   document.querySelectorAll('#routeMapSvg .map-stage-group').forEach(g => g.classList.remove('route-active'));
-  const safeFrom = 'map-g-' + fromStage.replace(/\s+/g,'-').replace(/[^a-zA-Z0-9-]/g,'');
-  const fromGrp = document.getElementById(safeFrom);
-  if (fromGrp) fromGrp.classList.add('route-active');
-  if (toStage && toStage !== fromStage) {
-    const safeTo = 'map-g-' + toStage.replace(/\s+/g,'-').replace(/[^a-zA-Z0-9-]/g,'');
-    const toGrp = document.getElementById(safeTo);
-    if (toGrp) toGrp.classList.add('route-active');
+  const safeCurrent = 'map-g-' + currentStage.replace(/\s+/g,'-').replace(/[^a-zA-Z0-9-]/g,'');
+  const currentGrp = document.getElementById(safeCurrent);
+  if (currentGrp) currentGrp.classList.add('route-active');
+  if (prevStage && prevStage !== currentStage) {
+    const safePrev = 'map-g-' + prevStage.replace(/\s+/g,'-').replace(/[^a-zA-Z0-9-]/g,'');
+    const prevGrp = document.getElementById(safePrev);
+    if (prevGrp) prevGrp.classList.add('route-active');
   }
   const arrowEl = document.getElementById('routeArrow');
   if (!arrowEl) return;
-  if (toStage && toStage !== fromStage) {
-    const fp = MAP_LAYOUT[fromStage], tp = MAP_LAYOUT[toStage];
+  if (prevStage && prevStage !== currentStage) {
+    const fp = MAP_LAYOUT[prevStage], tp = MAP_LAYOUT[currentStage];
     if (fp && tp) {
       const x1 = fp.x + fp.w/2, y1 = fp.y + fp.h/2;
       const x2 = tp.x + tp.w/2, y2 = tp.y + tp.h/2;
