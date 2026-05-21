@@ -398,6 +398,8 @@ function updateNowLive() {
 }
 
 function onClockClick() {
+  const modal = document.getElementById('testModal');
+  if (modal && modal.classList.contains('open')) return;
   const now = Date.now();
   if (!window.clockTaps) window.clockTaps = [];
   const taps = window.clockTaps;
@@ -442,7 +444,10 @@ function openTestMenu() {
     window.simMin = Math.min(55, Math.max(0, m));
   }
   updateDisplay();
-  document.getElementById('testModal').classList.add('open');
+  const modal = document.getElementById('testModal');
+  modal.classList.remove('open');
+  void modal.offsetWidth; // force reflow so the CSS animation restarts each time
+  modal.classList.add('open');
 }
 
 function adjustSimTime(field, delta) {
