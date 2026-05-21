@@ -27,6 +27,7 @@ window.closeTestMenu = closeTestMenu;
 window.setMockTime = setMockTime;
 window.disableMock = disableMock;
 window.onClockClick = onClockClick;
+window.adjustSimTime = adjustSimTime;
 window.hideConflictToast = hideConflictToast;
 
 // ═══════════════════════════════ RENDERIZADO ═══════════════════════════════
@@ -429,7 +430,28 @@ function closeLegalModal() {
 }
 
 function openTestMenu() {
+  if (window.isMockActive && window.mockTime != null) {
+    window.simHour = Math.floor(window.mockTime / 60);
+    window.simMin = window.mockTime % 60;
+  } else {
+    const mins = getCurrentMinutes();
+    let h = Math.floor(mins / 60);
+    let m = Math.round((mins % 60) / 5) * 5;
+    if (m >= 60) { h++; m = 0; }
+    window.simHour = Math.min(27, Math.max(15, h));
+    window.simMin = Math.min(55, Math.max(0, m));
+  }
+  updateDisplay();
   document.getElementById('testModal').classList.add('open');
+}
+
+function adjustSimTime(field, delta) {
+  if (field === 'hour') {
+    window.simHour = Math.min(27, Math.max(15, (window.simHour || 16) + delta));
+  } else {
+    window.simMin = (((window.simMin || 0) + delta) + 60) % 60;
+  }
+  updateDisplay();
 }
 
 function closeTestMenu() {
@@ -437,32 +459,30 @@ function closeTestMenu() {
 }
 
 function setMockTime() {
-  let hour = parseInt(document.getElementById('testHour').value);
-  let min = parseInt(document.getElementById('testMin').value);
-  window.mockTime = hour * 60 + min;
+  window.mockTime = (window.simHour || 16) * 60 + (window.simMin || 0);
   window.isMockActive = true;
-  updateDisplay();
-  document.getElementById('mockStatus').style.display = 'block';
+  const badge = document.getElementById('mockStatus');
+  if (badge) badge.style.display = 'flex';
+  const mt = document.getElementById('mockTime');
+  if (mt) mt.textContent = String(window.simHour || 16).padStart(2,'0') + ':' + String(window.simMin || 0).padStart(2,'0');
   updateClock();
   goTab(window.curTab);
+  closeTestMenu();
 }
 
 function disableMock() {
   window.isMockActive = false;
   window.mockTime = null;
-  document.getElementById('mockStatus').style.display = 'none';
-  updateDisplay();
+  const badge = document.getElementById('mockStatus');
+  if (badge) badge.style.display = 'none';
   updateClock();
   goTab(window.curTab);
+  closeTestMenu();
 }
 
 function updateDisplay() {
-  if (window.isMockActive) {
-    let hour = Math.floor(window.mockTime / 60);
-    let min = window.mockTime % 60;
-    document.getElementById('testDisplay').textContent = String(hour).padStart(2,'0') + ':' + String(min).padStart(2,'0');
-    document.getElementById('mockTime').textContent = String(hour).padStart(2,'0') + ':' + String(min).padStart(2,'0');
-  }
+  const display = document.getElementById('testDisplay');
+  if (display) display.textContent = String(window.simHour || 16).padStart(2,'0') + ':' + String(window.simMin || 0).padStart(2,'0');
 }
 
 function showConflictToast(a, b) {
@@ -486,9 +506,6 @@ document.addEventListener('click', (e) => {
     closeTestMenu();
   }
 });
-
-document.getElementById('testHour').addEventListener('change', updateDisplay);
-document.getElementById('testMin').addEventListener('change', updateDisplay);
 
 document.body.classList.add(`day-${window.festivalDay}`);
 setDayStyles(window.festivalDay);
