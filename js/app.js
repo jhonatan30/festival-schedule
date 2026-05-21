@@ -468,6 +468,7 @@ function closeTestMenu() {
 
 function setMockTime() {
   window.mockTime = (window.simHour || 16) * 60 + (window.simMin || 0);
+  window.mockStartReal = Date.now();
   window.isMockActive = true;
   const badge = document.getElementById('mockStatus');
   if (badge) badge.style.display = 'flex';
