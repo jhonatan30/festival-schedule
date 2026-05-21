@@ -6,7 +6,7 @@
 import { STAGES_LIST, LINEUP, LINEUP_DAY23 } from './config.js';
 import {
   saved, curTab, curStage, stageFilter, hintGone, swipeListenersAttached,
-  mockTime, isMockActive, clockClickCount, contentUpdateInterval, festivalDay,
+  mockTime, isMockActive, contentUpdateInterval, festivalDay,
   updateSavedState
 } from './state.js';
 import {
@@ -397,12 +397,26 @@ function updateNowLive() {
 }
 
 function onClockClick() {
-  window.clockClickCount++;
-  if (window.clockClickCount === 5) {
-    let btn = document.getElementById('testBtn');
-    if (btn) { btn.style.visibility = 'visible'; btn.style.pointerEvents = 'auto'; }
+  const now = Date.now();
+  if (!window.clockTaps) window.clockTaps = [];
+  const taps = window.clockTaps;
+
+  // Reset if too long since last tap
+  if (taps.length > 0 && now - taps[taps.length - 1] > 3000) {
+    window.clockTaps = [now];
+    return;
+  }
+
+  taps.push(now);
+  if (taps.length < 5) return;
+
+  // Pattern: ●●●  ●●  (3 fast taps, pause, 2 fast taps)
+  const [t1, t2, t3, t4, t5] = taps.slice(-5);
+  if (t2 - t1 < 500 && t3 - t2 < 500 && t4 - t3 >= 600 && t5 - t4 < 500) {
+    window.clockTaps = [];
     openTestMenu();
-    window.clockClickCount = 0;
+  } else {
+    window.clockTaps = taps.slice(-4);
   }
 }
 
