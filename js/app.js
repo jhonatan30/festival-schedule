@@ -167,7 +167,6 @@ function renderStages() {
       ${svHere ? `<div class="sc-saved-info">♥ ${svHere} artista${svHere>1?'s':''} guardado${svHere>1?'s':''}</div>` : ''}
     </div>`;
   });
-  html += `<div class="venue-card"><div class="venue-title">📍 Ubicación del evento</div><div class="venue-detail"><strong>Corferias</strong><br>Cra 40 #22C-67, Bogotá</div><div class="venue-detail">🕓 Puertas abren a las <strong>15:00</strong></div><div class="venue-detail">🔞 Evento para mayores de 18 años</div><div class="venue-detail"><a href="https://www.ticketmaster.com.co" target="_blank" class="venue-link">🎟 Comprar entradas en Ticketmaster ↗</a></div></div></div>`;
   return html;
 }
 

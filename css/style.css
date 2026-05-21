@@ -1172,47 +1172,6 @@ body.day-23 {
   z-index: 2;
 }
 
-/* VENUE CARD */
-.venue-card {
-  background: linear-gradient(135deg, rgba(255,184,208,.08) 0%, rgba(123,79,255,.05) 100%);
-  border: 1px solid rgba(255,184,208,.15);
-  border-radius: 16px;
-  padding: 16px;
-  font-size: 12px;
-  color: rgba(255,184,208,.65);
-  line-height: 1.8;
-  margin-top: 12px;
-}
-
-.venue-title {
-  font-size: 14px;
-  font-weight: 700;
-  color: var(--primary-accent);
-  margin-bottom: 12px;
-}
-
-.venue-detail {
-  margin-bottom: 10px;
-  display: flex;
-  align-items: center;
-  gap: 6px;
-}
-
-.venue-detail strong {
-  color: var(--primary-accent);
-  font-weight: 700;
-}
-
-.venue-link {
-  color: var(--primary-accent);
-  font-weight: 700;
-  text-decoration: none;
-  transition: all .2s;
-}
-
-.venue-link:hover {
-  text-decoration: underline;
-}
 
 /* ── BOTTOM NAV (reservado para futuro uso) ── */
 
