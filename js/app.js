@@ -87,7 +87,7 @@ function renderLineup() {
   let liveBar = liveNow.length ? `<div class="live-now-bar"><span class="live-dot" style="width:7px;height:7px;border-radius:50%;background:var(--primary-accent);animation:blink 1.3s infinite;display:inline-block;margin-right:6px;vertical-align:middle"></span>${liveNow.length} set${liveNow.length > 1 ? 's' : ''} en vivo ahora</div>` : '';
   let body = liveBar;
   let hours = Object.keys(groups).sort((a,b) => {let ah = parseInt(a) < 15 ? parseInt(a)+24 : parseInt(a); let bh = parseInt(b) < 15 ? parseInt(b)+24 : parseInt(b); return ah - bh;});
-  hours.forEach(h => {body += `<div class="time-divider"><span class="time-divider-lbl">${h}:00</span><div class="time-divider-line"></div></div>`; groups[h].forEach(a => {let sv = saved.has(a.id), np = isNow(a), conf = hasConflict(a); let sc = stageColor(a.stage); let stageSafe = a.stage.toLowerCase().replace(/\s+/g, '-'); let badges = ''; if (np) badges += `<span class="badge-live">En vivo · ${fmtMin(remMin(a))}</span>`; if (conf) badges += `<span class="badge-conflict">⚡ Conflicto</span>`; body += `<div class="lc ${sv ? 'sv' : ''} ${np ? 'np' : ''} stage-${stageSafe}" style="${np ? '--np-c:'+sc : ''}; --stage-border-color: ${sc}"><div class="lc-tb"><div class="lc-ts">${a.start}</div><div class="lc-te">→${a.end}</div></div><div class="lc-b"><div class="lc-n">${a.name}</div><div class="lc-stg" style="color:${sc}">${a.stage}</div><div class="lc-row">${badges}${a.tags.map(t => `<span class="lc-tag">${t}</span>`).join('')}</div></div><button class="lc-sv-btn ${sv ? 'on' : ''}" data-artist-id="${a.id}" onclick="toggleSave(${a.id})"><i class="ti ${sv ? 'ti-heart-filled' : 'ti-heart'}"></i></button></div>`;});});
+  hours.forEach(h => {body += `<div class="time-divider"><span class="time-divider-lbl">${h}:00</span><div class="time-divider-line"></div></div>`; groups[h].forEach(a => {let sv = saved.has(a.id), np = isNow(a), conf = hasConflict(a); let sc = stageColor(a.stage); let stageSafe = a.stage.toLowerCase().replace(/\s+/g, '-'); let badges = ''; if (np) badges += `<span class="badge-live">En vivo · <span id="bl-rem-${a.id}">${fmtMin(remMin(a))}</span></span>`; if (conf) badges += `<span class="badge-conflict">⚡ Conflicto</span>`; body += `<div class="lc ${sv ? 'sv' : ''} ${np ? 'np' : ''} stage-${stageSafe}" style="${np ? '--np-c:'+sc : ''}; --stage-border-color: ${sc}"><div class="lc-tb"><div class="lc-ts">${a.start}</div><div class="lc-te">→${a.end}</div></div><div class="lc-b"><div class="lc-n">${a.name}</div><div class="lc-stg" style="color:${sc}">${a.stage}</div><div class="lc-row">${badges}${a.tags.map(t => `<span class="lc-tag">${t}</span>`).join('')}</div></div><button class="lc-sv-btn ${sv ? 'on' : ''}" data-artist-id="${a.id}" onclick="toggleSave(${a.id})"><i class="ti ${sv ? 'ti-heart-filled' : 'ti-heart'}"></i></button></div>`;});});
   return `<div class="lineup-wrap"><div class="stage-filter-bar">${pills}</div><div class="lineup-list">${body}</div></div>`;
 }
 
@@ -111,7 +111,7 @@ function renderAgenda() {
       let sc = stageColor(a.stage);
       let stageSafe = a.stage.toLowerCase().replace(/\s+/g, '-');
       let badges = '';
-      if (np) badges += `<span class="badge-live">En vivo · ${fmtMin(remMin(a))}</span>`;
+      if (np) badges += `<span class="badge-live">En vivo · <span id="bl-rem-${a.id}">${fmtMin(remMin(a))}</span></span>`;
       if (conf) badges += `<span class="badge-conflict">⚡ Conflicto</span>`;
       body += `<div class="lc ${sv ? 'sv' : ''} ${np ? 'np' : ''} stage-${stageSafe}" style="${np ? '--np-c:'+sc : ''}; --stage-border-color: ${sc}"><div class="lc-tb"><div class="lc-ts">${a.start}</div><div class="lc-te">→${a.end}</div></div><div class="lc-b"><div class="lc-n">${a.name}</div><div class="lc-stg" style="color:${sc}">${a.stage}</div><div class="lc-row">${badges}${a.tags.map(t => `<span class="lc-tag">${t}</span>`).join('')}</div></div><button class="lc-sv-btn ${sv ? 'on' : ''}" data-artist-id="${a.id}" onclick="toggleSave(${a.id})"><i class="ti ${sv ? 'ti-heart-filled' : 'ti-heart'}"></i></button></div>`;
     });
@@ -147,7 +147,7 @@ function renderStages() {
             <div class="sc-artist-name">${nowA.name}</div>
             <div class="sc-progress">
               <div class="sc-progress-bar"><div class="sc-progress-fill" id="st-bar-${si}" style="width:${p}%"></div></div>
-              <div class="sc-progress-text">${fmtMin(elMin(nowA))} tocado · ${fmtMin(rem)} restante (${p}%)</div>
+              <div class="sc-progress-text" id="st-meta-${si}">${fmtMin(elMin(nowA))} tocado · ${fmtMin(rem)} restante</div>
             </div>
             <div class="sc-times"><span>${nowA.start}</span> - <span>${nowA.end}</span></div>
           </div>
@@ -155,7 +155,7 @@ function renderStages() {
           <div class="sc-next-playing">
             <div class="sc-next-label">Próximo artista</div>
             <div class="sc-artist-name">${nextArtist.name}</div>
-            <div class="sc-next-time">En ${fmtMin(timeUntilNext)}</div>
+            <div class="sc-next-time">En <span id="st-next-${si}">${fmtMin(timeUntilNext)}</span></div>
             <div class="sc-times"><span>${nextArtist.start}</span> - <span>${nextArtist.end}</span></div>
           </div>
         ` : `
@@ -366,33 +366,37 @@ function updateClock() {
 
 function updateNowLive() {
   STAGES_LIST.forEach((_, si) => {
-    let acts = getLineupForDay().filter(a => a.stage === STAGES_LIST[si].name);
-    let nowA = acts.find(a => isNow(a));
+    const acts = getLineupForDay().filter(a => a.stage === STAGES_LIST[si].name);
+    const nowA = acts.find(a => isNow(a));
+
     if (nowA) {
-      let rem = remMin(nowA);
-      let el = elMin(nowA);
-      let p = pct(nowA);
-      ['pr-rem-', 'pr-el-', 'pr-pct-', 'pr-remb-', 'st-bar-', 'st-meta-'].forEach(id => {
-        let el_id = document.getElementById(id + si);
-        if (el_id) {
-          if (id === 'pr-rem-') el_id.textContent = fmtMin(rem);
-          if (id === 'pr-el-') el_id.textContent = fmtMin(el) + ' tocado';
-          if (id === 'pr-pct-') el_id.textContent = p + '%';
-          if (id === 'pr-remb-') el_id.textContent = fmtMin(rem) + ' restante';
-          if (id === 'st-bar-') el_id.style.width = Math.max(2, p) + '%';
-          if (id === 'st-meta-') el_id.textContent = fmtMin(rem) + ' restante · ' + p + '%';
-        }
-      });
+      const rem = remMin(nowA), el = elMin(nowA), p = pct(nowA);
+      const set = (id, val) => { const e = document.getElementById(id); if (e) e.textContent = val; };
+      set('pr-rem-' + si, fmtMin(rem));
+      set('pr-el-'  + si, fmtMin(el) + ' tocado');
+      set('pr-pct-' + si, p + '%');
+      set('pr-remb-'+ si, fmtMin(rem) + ' restante');
+      set('st-meta-'+ si, fmtMin(el) + ' tocado · ' + fmtMin(rem) + ' restante');
+      const bar = document.getElementById('pr-bar-' + si);
+      if (bar) bar.style.width = Math.max(2, p) + '%';
+      const stBar = document.getElementById('st-bar-' + si);
+      if (stBar) stBar.style.width = Math.max(2, p) + '%';
     }
-    let upA = acts.filter(a => isUp(a)).sort((a,b) => toMin(a.start) - toMin(b.start))[0];
+
+    const upA = acts.filter(a => isUp(a)).sort((a, b) => toMin(a.start) - toMin(b.start))[0];
     if (upA) {
-      let timeUntil = getEventMinutes(upA.start);
-      let el_id = document.getElementById('st-next-' + si);
-      if (el_id) el_id.textContent = fmtMin(Math.max(0, timeUntil));
+      const t = fmtMin(Math.max(0, getEventMinutes(upA.start)));
+      const cdEl = document.getElementById('cd-rem-' + si);
+      if (cdEl) cdEl.textContent = t;
+      const stNext = document.getElementById('st-next-' + si);
+      if (stNext) stNext.textContent = t;
     }
-    [...document.querySelectorAll('cd-rem-' + si)].forEach(el => {
-      if (el && upA) el.textContent = fmtMin(Math.max(0, getEventMinutes(upA.start)));
-    });
+  });
+
+  // Update "En vivo · X" badges in Lineup and Agenda tabs
+  getLineupForDay().filter(a => isNow(a)).forEach(a => {
+    const bl = document.getElementById('bl-rem-' + a.id);
+    if (bl) bl.textContent = fmtMin(remMin(a));
   });
 }
 
