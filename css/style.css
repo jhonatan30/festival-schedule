@@ -582,11 +582,11 @@ body.day-23 {
   text-align: center;
   padding: 0 0 8px;
   font-family: 'Bebas Neue', sans-serif;
-  font-size: 12px;
-  letter-spacing: 3px;
-  color: rgba(255,184,208,.38);
+  font-size: 22px;
+  letter-spacing: 4px;
+  color: var(--primary-accent);
   flex-shrink: 0;
-  transition: opacity .2s;
+  transition: color .35s, opacity .2s;
 }
 
 /* swipe viewport */
@@ -1577,21 +1577,6 @@ body.day-23 {
 }
 
 /* ── MAP TAB ── */
-.map-wrap {
-  padding: 10px 10px 0;
-  display: flex;
-  flex-direction: column;
-  height: 100%;
-  overflow-y: auto;
-}
-.map-header-lbl {
-  font-size: 10px;
-  font-weight: 700;
-  letter-spacing: 1px;
-  text-transform: uppercase;
-  color: rgba(255,184,208,.4);
-  padding: 0 4px 8px;
-}
 .map-svg {
   width: 100%;
   max-width: 440px;
@@ -1636,94 +1621,6 @@ body.day-23 {
   transform-origin: center;
   animation: map-pulse 1.6s ease-out infinite;
 }
-.map-info-panel {
-  margin: 10px 2px 12px;
-  background: rgba(255,184,208,.04);
-  border: 1px solid rgba(255,184,208,.1);
-  border-radius: 12px;
-  padding: 14px 16px;
-  min-height: 56px;
-}
-.map-info-empty {
-  color: rgba(255,184,208,.35);
-  font-size: 12px;
-  text-align: center;
-  padding: 6px 0;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 6px;
-}
-.map-info-stage-name {
-  font-family: 'Bebas Neue', sans-serif;
-  font-size: 22px;
-  letter-spacing: .5px;
-  line-height: 1;
-}
-.map-info-desc {
-  font-size: 11px;
-  color: rgba(255,184,208,.5);
-  margin-top: 2px;
-}
-.map-info-artist {
-  margin-top: 10px;
-}
-.map-info-artist-name {
-  font-size: 16px;
-  font-weight: 700;
-  color: #fff;
-  line-height: 1.2;
-}
-.map-info-times {
-  font-size: 12px;
-  color: rgba(255,184,208,.55);
-  margin-top: 2px;
-}
-.map-info-tags {
-  display: flex;
-  gap: 5px;
-  flex-wrap: wrap;
-  margin-top: 8px;
-}
-.map-info-tag {
-  font-size: 10px;
-  padding: 2px 8px;
-  border-radius: 10px;
-  background: rgba(255,184,208,.07);
-  color: rgba(255,184,208,.55);
-}
-.map-info-save-btn {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  margin-top: 12px;
-  padding: 7px 16px;
-  border-radius: 20px;
-  border: 1.5px solid rgba(255,184,208,.22);
-  background: transparent;
-  color: rgba(255,184,208,.65);
-  font-size: 13px;
-  font-weight: 600;
-  cursor: pointer;
-  transition: all .2s;
-  font-family: 'Space Grotesk', sans-serif;
-}
-.map-info-save-btn.saved {
-  background: var(--primary-accent);
-  color: #0d1b3d;
-  border-color: var(--primary-accent);
-}
-.map-info-status-live {
-  display: inline-flex;
-  align-items: center;
-  gap: 5px;
-  font-size: 10px;
-  font-weight: 700;
-  color: var(--primary-accent);
-  margin-bottom: 5px;
-  letter-spacing: .5px;
-}
-
 /* ── ROUTE BUTTON ── */
 .route-btn {
   display: flex;

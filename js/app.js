@@ -29,7 +29,6 @@ window.disableMock = disableMock;
 window.onClockClick = onClockClick;
 window.adjustSimTime = adjustSimTime;
 window.hideConflictToast = hideConflictToast;
-window.showMapStageInfo = showMapStageInfo;
 window.showAgendaRoute = showAgendaRoute;
 window.closeAgendaRoute = closeAgendaRoute;
 window.selectRouteStep = selectRouteStep;
@@ -50,11 +49,11 @@ const WALK_MINUTES = {
   'Resident Advisor|Todalanoche': 10,
 };
 const MAP_LAYOUT = {
-  'Todalanoche':      { x:16,  y:18, w:66,  h:50 },
-  'Stamm':            { x:90,  y:18, w:80,  h:50 },
+  'Stamm':            { x:14,  y:18, w:80,  h:50 },
+  'Todalanoche':      { x:100, y:18, w:66,  h:50 },
   'BAUM':             { x:178, y:18, w:108, h:50 },
-  'Páramo':           { x:138, y:148, w:90, h:50 },
-  'Resident Advisor': { x:248, y:142, w:78, h:50 },
+  'Páramo':           { x:182, y:148, w:90, h:50 },
+  'Resident Advisor': { x:280, y:148, w:76, h:50 },
 };
 function walkTime(stageA, stageB) {
   return WALK_MINUTES[[stageA, stageB].sort().join('|')] || 5;
@@ -78,28 +77,32 @@ function countdownHTML(a, si) {
 function renderNow() {
   let views = '';
   STAGES_LIST.forEach((st, si) => {
-    let acts = getLineupForDay().filter(a => a.stage === st.name);
+    let acts = getLineupForDay()
+      .filter(a => a.stage === st.name)
+      .sort((a, b) => toMin(a.start) - toMin(b.start));
     let nowA = acts.find(a => isNow(a));
-    let upA = acts.filter(a => isUp(a)).sort((a,b) => toMin(a.start) - toMin(b.start));
-    let heroHTML = '';
-    let displayArtist = nowA || upA[0];
+    let upA = acts.filter(a => isUp(a)).sort((a, b) => toMin(a.start) - toMin(b.start));
+    let heroArtist = nowA || upA[0] || null;
     let isLive = !!nowA;
-    if (displayArtist) {
-      let sv = saved.has(displayArtist.id);
-      heroHTML = `<div class="hero"><div class="hero-shine"></div><div class="hero-grid"></div><div class="hero-top"><div class="live-pill"><div class="live-dot ${isLive ? '' : 'inactive'}"></div><span class="live-txt">${isLive ? 'En escena' : 'Próximo'}</span></div><button class="hero-save-btn" data-artist-id="${displayArtist.id}" onclick="toggleSave(${displayArtist.id})"><i class="ti ${sv ? 'ti-heart-filled' : 'ti-heart'}"></i></button></div><div class="hero-name">${displayArtist.name}${displayArtist.extra ? `<span class="hero-extra">${displayArtist.extra}</span>` : ''}</div><div class="hero-sub">${st.name} · ${displayArtist.start} → ${displayArtist.end}</div><div class="hero-tags">${displayArtist.tags.map(t => `<span class="hero-tag">${t}</span>`).join('')}</div>${isLive ? progressHTML(displayArtist, si) : countdownHTML(displayArtist, si)}</div>`;
+    let stageHTML = '';
+    if (acts.length === 0) {
+      stageHTML = `<div class="hero hero-empty"><div class="hero-top"><div class="live-pill" style="background:rgba(255,184,208,.08)"><div style="width:7px;height:7px;border-radius:50%;background:rgba(255,184,208,.25)"></div><span class="live-txt" style="color:rgba(255,184,208,.35)">Sin artistas</span></div></div><div class="hero-name" style="font-size:32px;color:rgba(255,184,208,.3);margin:10px 0 6px">–</div><div class="hero-sub" style="color:rgba(255,184,208,.25)">No hay artistas en este escenario</div></div>`;
     } else {
-      heroHTML = `<div class="hero hero-empty"><div class="hero-top"><div class="live-pill" style="background:rgba(255,184,208,.08)"><div style="width:7px;height:7px;border-radius:50%;background:rgba(255,184,208,.25)"></div><span class="live-txt" style="color:rgba(255,184,208,.35)">Festival finalizado</span></div></div><div class="hero-name" style="font-size:32px;color:rgba(255,184,208,.3);margin:10px 0 6px">–</div><div class="hero-sub" style="color:rgba(255,184,208,.25)">No hay más artistas en este escenario</div></div>`;
+      acts.forEach(a => {
+        const isPast = getEventMinutes(a.end) < 0;
+        const isHero = heroArtist && a.id === heroArtist.id;
+        const sv = saved.has(a.id);
+        if (isHero) {
+          stageHTML += `<div class="hero"><div class="hero-shine"></div><div class="hero-grid"></div><div class="hero-top"><div class="live-pill"><div class="live-dot ${isLive ? '' : 'inactive'}"></div><span class="live-txt">${isLive ? 'En escena' : 'Próximo'}</span></div><button class="hero-save-btn" data-artist-id="${a.id}" onclick="toggleSave(${a.id})"><i class="ti ${sv ? 'ti-heart-filled' : 'ti-heart'}"></i></button></div><div class="hero-name">${a.name}${a.extra ? `<span class="hero-extra">${a.extra}</span>` : ''}</div><div class="hero-sub">${st.name} · ${a.start} → ${a.end}</div><div class="hero-tags">${a.tags.map(t => `<span class="hero-tag">${t}</span>`).join('')}</div>${isLive ? progressHTML(a, si) : countdownHTML(a, si)}</div>`;
+        } else {
+          stageHTML += `<div class="ac ${sv ? 'sv' : ''} ${isPast ? 'passed' : ''}"><div class="ac-tb"><div class="ac-t">${a.start}</div><div class="ac-te">→${a.end}</div></div><div class="ac-b"><div class="ac-n">${a.name}</div><div class="ac-s">${a.tags.join(' · ')}</div></div><button class="ac-btn" data-artist-id="${a.id}" onclick="toggleSave(${a.id})"><i class="ti ${sv ? 'ti-heart-filled' : 'ti-heart'}"></i></button></div>`;
+        }
+      });
+      if (!heroArtist) {
+        stageHTML += `<div class="hero hero-empty"><div class="hero-top"><div class="live-pill" style="background:rgba(255,184,208,.08)"><div style="width:7px;height:7px;border-radius:50%;background:rgba(255,184,208,.25)"></div><span class="live-txt" style="color:rgba(255,184,208,.35)">Festival finalizado</span></div></div><div class="hero-name" style="font-size:32px;color:rgba(255,184,208,.3);margin:10px 0 6px">–</div><div class="hero-sub" style="color:rgba(255,184,208,.25)">No hay más artistas en este escenario</div></div>`;
+      }
     }
-    let nextHTML = '';
-    let allArtistsWithStatus = acts.map(a => ({artist:a,isPassed:getEventMinutes(a.end) < 0}));
-    allArtistsWithStatus.sort((a, b) => {if (a.isPassed && !b.isPassed) return 1; if (!a.isPassed && b.isPassed) return -1; return getEventMinutes(a.artist.start) - getEventMinutes(b.artist.start);});
-    // Filter out the display artist to avoid duplication
-    let filteredArtists = allArtistsWithStatus.filter(item => !displayArtist || item.artist.id !== displayArtist.id);
-    if (filteredArtists.length) {
-      nextHTML = `<div class="next-section-lbl">A continuación</div>`;
-      filteredArtists.forEach(item => {let a = item.artist; let sv = saved.has(a.id); let classes = `ac ${sv ? 'sv' : ''} ${item.isPassed ? 'passed' : ''}`; nextHTML += `<div class="${classes}"><div class="ac-tb"><div class="ac-t">${a.start}</div><div class="ac-te">→${a.end}</div></div><div class="ac-b"><div class="ac-n">${a.name}</div><div class="ac-s">${a.tags.join(' · ')}</div></div><button class="ac-btn" data-artist-id="${a.id}" onclick="toggleSave(${a.id})"><i class="ti ${sv ? 'ti-heart-filled' : 'ti-heart'}"></i></button></div>`;});
-    }
-    views += `<div class="s-view" data-s="${si}">${heroHTML}${nextHTML}</div>`;
+    views += `<div class="s-view" data-s="${si}">${stageHTML}</div>`;
   });
   return `<div class="now-wrap"><div class="dots-row" id="dots"></div><div class="stage-name-lbl" id="snlbl">STAMM</div><div class="swipe-vp" id="svp"><div class="swipe-track" id="strk">${views}</div><div class="sw-hint" id="shint"><i class="ti ti-arrows-left-right" style="font-size:13px"></i> desliza entre escenarios</div></div></div>`;
 }
@@ -237,11 +240,11 @@ function renderMapSVG(highlightStage, compact, routeMode) {
     <rect x="12" y="10" width="360" height="198" rx="8" fill="rgba(13,27,61,.45)" stroke="rgba(255,184,208,.14)" stroke-width="1.5"/>
     <text x="192" y="8" text-anchor="middle" class="map-street">CARRERA 40</text>
     <text x="192" y="214" text-anchor="middle" class="map-street">CARRERA 37</text>
-    <line x1="82" y1="43" x2="90" y2="43" stroke="rgba(255,184,208,.12)" stroke-width="6" stroke-dasharray="2,2"/>
-    <line x1="170" y1="43" x2="178" y2="43" stroke="rgba(255,184,208,.12)" stroke-width="6" stroke-dasharray="2,2"/>
-    <line x1="130" y1="68" x2="183" y2="148" stroke="rgba(255,184,208,.09)" stroke-width="1.5" stroke-dasharray="5,4"/>
-    <line x1="232" y1="68" x2="255" y2="142" stroke="rgba(255,184,208,.09)" stroke-width="1.5" stroke-dasharray="5,4"/>
-    <line x1="228" y1="172" x2="248" y2="165" stroke="rgba(255,184,208,.09)" stroke-width="1.5" stroke-dasharray="5,4"/>
+    <line x1="94" y1="43" x2="100" y2="43" stroke="rgba(255,184,208,.12)" stroke-width="6" stroke-dasharray="2,2"/>
+    <line x1="166" y1="43" x2="178" y2="43" stroke="rgba(255,184,208,.12)" stroke-width="6" stroke-dasharray="2,2"/>
+    <line x1="133" y1="68" x2="185" y2="148" stroke="rgba(255,184,208,.09)" stroke-width="1.5" stroke-dasharray="5,4"/>
+    <line x1="258" y1="68" x2="284" y2="148" stroke="rgba(255,184,208,.09)" stroke-width="1.5" stroke-dasharray="5,4"/>
+    <line x1="272" y1="173" x2="280" y2="173" stroke="rgba(255,184,208,.09)" stroke-width="1.5" stroke-dasharray="5,4"/>
     <text x="68" y="118" text-anchor="middle" class="map-amenity">Zona de</text>
     <text x="68" y="129" text-anchor="middle" class="map-amenity">Comidas</text>
     <text x="120" y="118" text-anchor="middle" class="map-amenity">VIP</text>
@@ -251,48 +254,6 @@ function renderMapSVG(highlightStage, compact, routeMode) {
   </svg>`;
 }
 
-function renderMap() {
-  return `<div class="map-wrap">
-    <div class="map-header-lbl">Mapa del festival · Corferias</div>
-    ${renderMapSVG(null, false)}
-    <div class="map-info-panel" id="mapInfo">
-      <div class="map-info-empty"><i class="ti ti-hand-click"></i> Toca un escenario para ver detalles</div>
-    </div>
-  </div>`;
-}
-
-function showMapStageInfo(stageName) {
-  const lineup = getLineupForDay();
-  const st = STAGES_LIST.find(s => s.name === stageName);
-  if (!st) return;
-  const nowA = lineup.find(a => a.stage === stageName && isNow(a));
-  const upA  = lineup.filter(a => a.stage === stageName && isUp(a)).sort((a,b) => toMin(a.start)-toMin(b.start))[0];
-  const displayA = nowA || upA;
-  document.querySelectorAll('.map-stage-group').forEach(g => g.classList.remove('selected'));
-  const safeId = 'map-g-' + stageName.replace(/\s+/g,'-').replace(/[^a-zA-Z0-9-]/g,'');
-  const grp = document.getElementById(safeId);
-  if (grp) grp.classList.add('selected');
-  const panel = document.getElementById('mapInfo');
-  if (!panel) return;
-  if (!displayA) {
-    panel.innerHTML = `<div class="map-info-stage-name" style="color:${st.color}">${st.name}</div><div class="map-info-desc">${st.desc}</div><div style="margin-top:10px;font-size:12px;color:rgba(255,184,208,.3)">Escenario finalizado</div>`;
-    return;
-  }
-  const isSaved = saved.has(displayA.id);
-  const liveLabel = nowA ? `<div class="map-info-status-live"><span style="width:6px;height:6px;border-radius:50%;background:var(--primary-accent);display:inline-block;animation:blink 1.3s infinite"></span>EN VIVO</div>` : `<div style="font-size:10px;color:rgba(255,184,208,.38);margin-bottom:5px;font-weight:700;letter-spacing:.5px">PRÓXIMO</div>`;
-  panel.innerHTML = `<div style="display:flex;align-items:flex-start;justify-content:space-between">
-    <div><div class="map-info-stage-name" style="color:${st.color}">${st.name}</div><div class="map-info-desc">${st.desc}</div></div>
-  </div>
-  <div class="map-info-artist">
-    ${liveLabel}
-    <div class="map-info-artist-name">${displayA.name}${displayA.extra?` <span style="font-size:11px;opacity:.5">${displayA.extra}</span>`:''}</div>
-    <div class="map-info-times">${displayA.start} → ${displayA.end}</div>
-    <div class="map-info-tags">${displayA.tags.map(t=>`<span class="map-info-tag">${t}</span>`).join('')}</div>
-  </div>
-  <button class="map-info-save-btn${isSaved?' saved':''}" data-stage="${stageName}" onclick="toggleSave(${displayA.id});showMapStageInfo(this.getAttribute('data-stage'))">
-    <i class="ti ${isSaved?'ti-heart-filled':'ti-heart'}"></i>${isSaved?'Guardado':'Guardar'}
-  </button>`;
-}
 
 function showAgendaRoute() {
   const savedArtists = getLineupForDay().filter(a => saved.has(a.id)).sort((a,b) => toMin(a.start)-toMin(b.start));
@@ -483,7 +444,6 @@ const TAB_META = {
   lineup: { icon: 'ti-list',              name: 'LINEUP' },
   agenda: { icon: 'ti-heart',             name: 'MI AGENDA' },
   stages: { icon: 'ti-building-circus',   name: 'ESCENARIOS' },
-  map:    { icon: 'ti-map-2',             name: 'MAPA' },
 };
 
 function goTab(tab) {
@@ -504,7 +464,6 @@ function goTab(tab) {
   else if (tab === 'lineup') c.innerHTML = renderLineup();
   else if (tab === 'agenda') c.innerHTML = renderAgenda();
   else if (tab === 'stages') c.innerHTML = renderStages();
-  else if (tab === 'map') c.innerHTML = renderMap();
   if (tab === 'now') {
     window.swipeListenersAttached = false;
     initSwipe();
@@ -713,7 +672,7 @@ function setMockTime() {
   const badge = document.getElementById('mockStatus');
   if (badge) badge.style.display = 'flex';
   const mt = document.getElementById('mockTime');
-  if (mt) mt.textContent = String(window.simHour || 16).padStart(2,'0') + ':' + String(window.simMin || 0).padStart(2,'0');
+  if (mt) mt.textContent = String((window.simHour || 16) % 24).padStart(2,'0') + ':' + String(window.simMin || 0).padStart(2,'0');
   updateClock();
   goTab(window.curTab);
   closeTestMenu();
@@ -731,7 +690,7 @@ function disableMock() {
 
 function updateDisplay() {
   const display = document.getElementById('testDisplay');
-  if (display) display.textContent = String(window.simHour || 16).padStart(2,'0') + ':' + String(window.simMin || 0).padStart(2,'0');
+  if (display) display.textContent = String((window.simHour || 16) % 24).padStart(2,'0') + ':' + String(window.simMin || 0).padStart(2,'0');
 }
 
 function showConflictToast(a, b) {
