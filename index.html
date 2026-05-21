@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+  <title>Baum Festival 11</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/tabler-icons.min.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+  <div class="shell">
+    <!-- DISCLAIMER BANNER -->
+    <div class="disclaimer-banner">
+      <div class="disclaimer-banner-content">
+        <span>📋 Guía de Escenarios No Oficial – Baum Festival 2026</span>
+        <button class="disclaimer-icon-btn" onclick="openLegalModal()">
+          <i class="ti ti-info-circle"></i>
+        </button>
+      </div>
+    </div>
+
+    <!-- HEADER -->
+    <div class="hdr">
+      <div class="hdr-top">
+        <div>
+          <div class="logo">Baum <em>11</em></div>
+          <div class="hdr-sub">Bogotá · Corferias</div>
+        </div>
+        <div style="text-align:right">
+          <div id="clock" onclick="onClockClick()" style="font-family:'Bebas Neue';font-size:36px;font-weight:900;color:var(--primary-accent);cursor:pointer;line-height:1;letter-spacing:-1px">--:--</div>
+          <div id="headerDate" style="font-size:11px;color:rgba(255,184,208,.5);margin-top:2px;letter-spacing:.5px;text-transform:uppercase">Vie 22 · Mayo</div>
+        </div>
+      </div>
+
+      <!-- DAY SELECTOR -->
+      <div class="day-selector">
+        <button class="day-btn active" onclick="changeFestivalDay(22)">Vie 22</button>
+        <button class="day-btn" onclick="changeFestivalDay(23)">Sáb 23</button>
+      </div>
+
+      <!-- TABS -->
+      <div class="tabs">
+        <button class="tab active" onclick="goTab('now')"><i class="ti ti-player-play-filled"></i> Ahora</button>
+        <button class="tab" onclick="goTab('lineup')"><i class="ti ti-list"></i> Lineup</button>
+        <button class="tab" onclick="goTab('agenda')"><i class="ti ti-heart"></i> <span id="agenda-badge"></span>Mi Agenda</button>
+        <button class="tab" onclick="goTab('stages')"><i class="ti ti-building-circus"></i> Escenarios</button>
+      </div>
+    </div>
+
+    <!-- CONTENT -->
+    <div class="content" id="content"></div>
+
+    <!-- LEGAL MODAL -->
+    <div class="legal-modal" id="legalModal">
+      <div class="legal-modal-content">
+        <div class="legal-modal-header">
+          <h2>Información Legal</h2>
+          <button onclick="closeLegalModal()" style="background:none;border:none;color:var(--primary-accent);font-size:24px;cursor:pointer;padding:0">×</button>
+        </div>
+        <div class="legal-modal-body">
+          <p><strong>Baum Festival 11</strong> es un evento de música electrónica.</p>
+          <p style="margin-top:12px">Esta es una guía <strong>no oficial</strong> de escenarios y horarios, creada por fans. No está afiliada con los organizadores del festival.</p>
+          <p style="margin-top:12px">Los horarios y artistas están sujetos a cambios sin previo aviso. Consulta las redes oficiales del festival para información actualizada.</p>
+          <p style="margin-top:12px;font-size:12px;color:rgba(255,184,208,.5)">Evento para mayores de 18 años. Acceso desde 15:00</p>
+        </div>
+        <button class="legal-modal-btn" onclick="closeLegalModal()">Entendido</button>
+      </div>
+    </div>
+
+    <!-- CONFLICT TOAST -->
+    <div class="conflict-toast" id="conflictToast">
+      <div class="conflict-toast-content">
+        <i class="ti ti-alert-circle" style="font-size:18px"></i>
+        <div>
+          <div class="conflict-toast-title">Artistas superpuestos</div>
+          <div class="conflict-toast-msg" id="conflictMsg"></div>
+        </div>
+        <button onclick="hideConflictToast()" style="background:none;border:none;color:var(--primary-accent);font-size:16px;cursor:pointer;padding:0;margin-left:auto">×</button>
+      </div>
+    </div>
+
+    <!-- TEST MODAL -->
+    <div class="test-modal" id="testModal">
+      <div class="test-modal-content">
+        <h2>🧪 Simulador de Hora</h2>
+        <p style="margin:12px 0;color:rgba(255,184,208,.7)">Prueba la app a una hora específica del festival</p>
+        <div style="display:flex;gap:8px;margin:16px 0">
+          <input type="range" id="testHour" min="15" max="27" value="16" style="flex:1">
+          <input type="range" id="testMin" min="0" max="59" value="0" step="5" style="flex:1">
+        </div>
+        <div id="testDisplay" style="text-align:center;font-size:24px;font-family:'Bebas Neue';color:var(--primary-accent);margin:12px 0">16:00</div>
+        <div style="display:flex;gap:8px">
+          <button class="test-btn" onclick="setMockTime()">Simular</button>
+          <button class="test-btn" onclick="disableMock()">Desactivar</button>
+          <button class="test-btn" onclick="closeTestMenu()">Cerrar</button>
+        </div>
+        <p id="mockStatus" style="display:none;color:var(--primary-accent);margin-top:12px;font-size:12px">Hora simulada: <strong id="mockTime">--:--</strong></p>
+      </div>
+    </div>
+  </div>
+
+  <!-- SCRIPTS - Módulos ES6 -->
+  <script type="module" src="js/main.js"></script>
+</body>
+</html>
