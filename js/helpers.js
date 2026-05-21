@@ -113,7 +113,7 @@ export function fmtMin(m) {
  * Formatea minutos desde midnight a "HH:MM"
  */
 export function fmtClock(m) {
-  let h = Math.floor(m / 60) % 24, mm = m % 60;
+  let h = Math.floor(m / 60) % 24, mm = Math.floor(m % 60);
   return String(h).padStart(2,'0') + ':' + String(mm).padStart(2,'0');
 }
 
