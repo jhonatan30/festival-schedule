@@ -672,7 +672,7 @@ function setMockTime() {
   const badge = document.getElementById('mockStatus');
   if (badge) badge.style.display = 'flex';
   const mt = document.getElementById('mockTime');
-  if (mt) mt.textContent = String(window.simHour || 16).padStart(2,'0') + ':' + String(window.simMin || 0).padStart(2,'0');
+  if (mt) mt.textContent = String((window.simHour || 16) % 24).padStart(2,'0') + ':' + String(window.simMin || 0).padStart(2,'0');
   updateClock();
   goTab(window.curTab);
   closeTestMenu();
@@ -690,7 +690,7 @@ function disableMock() {
 
 function updateDisplay() {
   const display = document.getElementById('testDisplay');
-  if (display) display.textContent = String(window.simHour || 16).padStart(2,'0') + ':' + String(window.simMin || 0).padStart(2,'0');
+  if (display) display.textContent = String((window.simHour || 16) % 24).padStart(2,'0') + ':' + String(window.simMin || 0).padStart(2,'0');
 }
 
 function showConflictToast(a, b) {
