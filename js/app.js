@@ -49,11 +49,11 @@ const WALK_MINUTES = {
   'Resident Advisor|Todalanoche': 10,
 };
 const MAP_LAYOUT = {
-  'Todalanoche':      { x:16,  y:18, w:66,  h:50 },
-  'Stamm':            { x:90,  y:18, w:80,  h:50 },
+  'Stamm':            { x:14,  y:18, w:80,  h:50 },
+  'Todalanoche':      { x:100, y:18, w:66,  h:50 },
   'BAUM':             { x:178, y:18, w:108, h:50 },
-  'Páramo':           { x:138, y:148, w:90, h:50 },
-  'Resident Advisor': { x:248, y:142, w:78, h:50 },
+  'Páramo':           { x:182, y:148, w:90, h:50 },
+  'Resident Advisor': { x:280, y:148, w:76, h:50 },
 };
 function walkTime(stageA, stageB) {
   return WALK_MINUTES[[stageA, stageB].sort().join('|')] || 5;
@@ -240,11 +240,11 @@ function renderMapSVG(highlightStage, compact, routeMode) {
     <rect x="12" y="10" width="360" height="198" rx="8" fill="rgba(13,27,61,.45)" stroke="rgba(255,184,208,.14)" stroke-width="1.5"/>
     <text x="192" y="8" text-anchor="middle" class="map-street">CARRERA 40</text>
     <text x="192" y="214" text-anchor="middle" class="map-street">CARRERA 37</text>
-    <line x1="82" y1="43" x2="90" y2="43" stroke="rgba(255,184,208,.12)" stroke-width="6" stroke-dasharray="2,2"/>
-    <line x1="170" y1="43" x2="178" y2="43" stroke="rgba(255,184,208,.12)" stroke-width="6" stroke-dasharray="2,2"/>
-    <line x1="130" y1="68" x2="183" y2="148" stroke="rgba(255,184,208,.09)" stroke-width="1.5" stroke-dasharray="5,4"/>
-    <line x1="232" y1="68" x2="255" y2="142" stroke="rgba(255,184,208,.09)" stroke-width="1.5" stroke-dasharray="5,4"/>
-    <line x1="228" y1="172" x2="248" y2="165" stroke="rgba(255,184,208,.09)" stroke-width="1.5" stroke-dasharray="5,4"/>
+    <line x1="94" y1="43" x2="100" y2="43" stroke="rgba(255,184,208,.12)" stroke-width="6" stroke-dasharray="2,2"/>
+    <line x1="166" y1="43" x2="178" y2="43" stroke="rgba(255,184,208,.12)" stroke-width="6" stroke-dasharray="2,2"/>
+    <line x1="133" y1="68" x2="185" y2="148" stroke="rgba(255,184,208,.09)" stroke-width="1.5" stroke-dasharray="5,4"/>
+    <line x1="258" y1="68" x2="284" y2="148" stroke="rgba(255,184,208,.09)" stroke-width="1.5" stroke-dasharray="5,4"/>
+    <line x1="272" y1="173" x2="280" y2="173" stroke="rgba(255,184,208,.09)" stroke-width="1.5" stroke-dasharray="5,4"/>
     <text x="68" y="118" text-anchor="middle" class="map-amenity">Zona de</text>
     <text x="68" y="129" text-anchor="middle" class="map-amenity">Comidas</text>
     <text x="120" y="118" text-anchor="middle" class="map-amenity">VIP</text>
