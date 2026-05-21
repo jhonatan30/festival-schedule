@@ -234,6 +234,11 @@ body.day-23 {
   margin-top: 1px;
 }
 
+#clock {
+  -webkit-user-select: none;
+  user-select: none;
+}
+
 /* ── TABS ── */
 .tabs {
   display: flex;
