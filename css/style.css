@@ -212,8 +212,9 @@ body.day-23 {
 .hdr-top {
   display: flex;
   justify-content: space-between;
-  align-items: flex-start;
-  margin-bottom: 14px;
+  align-items: center;
+  padding-bottom: 14px;
+  border-bottom: 1px solid rgba(255,184,208,.08);
 }
 .logo {
   font-family: 'Bebas Neue', sans-serif;
@@ -243,12 +244,11 @@ body.day-23 {
 .hdr-section-bar {
   display: flex;
   align-items: center;
+  justify-content: center;
   gap: 8px;
-  padding: 8px 4px 14px;
   font-family: 'Bebas Neue', sans-serif;
   font-size: 13px;
   letter-spacing: 1.5px;
-  border-bottom: 1px solid rgba(255,184,208,.08);
 }
 #hdrSectionIcon { font-size: 11px; color: var(--primary-accent); }
 #hdrSectionName { color: var(--primary-accent); }
