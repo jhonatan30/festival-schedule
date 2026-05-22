@@ -288,9 +288,19 @@ function showAgendaRoute() {
       <button class="route-close-btn" onclick="closeAgendaRoute()"><i class="ti ti-arrow-left"></i></button>
       <span class="route-header-title">Tu ruta del día</span>
     </div>
-    <div class="route-map-mini">${renderMapSVG(null, true, true)}</div>
+    <div class="map-carousel">
+      <div class="map-carousel-track">
+        <div class="map-carousel-slide route-map-mini">${renderMapSVG(null, true, true)}</div>
+        <div class="map-carousel-slide">${render3DMap()}</div>
+      </div>
+      <div class="map-carousel-dots">
+        <button class="map-dot active" onclick="setMapSlide(0)"></button>
+        <button class="map-dot" onclick="setMapSlide(1)"></button>
+      </div>
+    </div>
     <div class="route-timeline">${timeline}</div>`;
   document.querySelector('.shell').appendChild(overlay);
+  initMapCarousel();
   selectRouteStep(0);
 }
 
@@ -468,6 +478,44 @@ function setSF(stage) {
   window.stageFilter = stage;
   const c = document.getElementById('content');
   if (c) c.innerHTML = renderLineup();
+}
+
+function goStageLineup(stage) {
+  window.stageFilter = stage;
+  goTab('lineup');
+}
+window.goStageLineup = goStageLineup;
+
+function render3DMap() {
+  const W = 380, H = 215;
+  const blocks = Object.entries(MAP_LAYOUT).map(([name, r]) => {
+    const color = stageColor(name);
+    const label = name.length > 8 ? name.substring(0, 5).toUpperCase() : name.toUpperCase();
+    const pL = (r.x / W * 100).toFixed(2);
+    const pT = (r.y / H * 100).toFixed(2);
+    const pW = (r.w / W * 100).toFixed(2);
+    const pH = (r.h / H * 100).toFixed(2);
+    return `<div class="map-3d-stage" style="left:${pL}%;top:${pT}%;width:${pW}%;height:${pH}%;background:${color}22;border:1.5px solid ${color};box-shadow:0 0 10px ${color}55"><span class="map-3d-label">${label}</span></div>`;
+  }).join('');
+  return `<div class="map-3d-scene"><div class="map-3d-world">${blocks}</div></div>`;
+}
+
+function setMapSlide(idx) {
+  const track = document.querySelector('.map-carousel-track');
+  if (track) track.style.transform = `translateX(calc(-${idx} * 100%))`;
+  document.querySelectorAll('.map-dot').forEach((d, i) => d.classList.toggle('active', i === idx));
+}
+window.setMapSlide = setMapSlide;
+
+function initMapCarousel() {
+  const track = document.querySelector('.map-carousel-track');
+  if (!track) return;
+  let startX = 0;
+  track.addEventListener('touchstart', e => { startX = e.touches[0].clientX; }, { passive: true });
+  track.addEventListener('touchend', e => {
+    const dx = e.changedTouches[0].clientX - startX;
+    if (Math.abs(dx) > 40) setMapSlide(dx < 0 ? 1 : 0);
+  }, { passive: true });
 }
 
 function goNowStage(si) {
