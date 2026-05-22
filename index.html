@@ -30,7 +30,7 @@
           <div class="hdr-sub">Bogotá · Corferias</div>
         </div>
         <div style="display:flex;align-items:center;gap:10px">
-          <div id="clock" onclick="onClockClick()" style="font-family:'Bebas Neue';font-size:36px;font-weight:900;color:var(--primary-accent);cursor:pointer;line-height:1;letter-spacing:-1px;-webkit-user-select:none;user-select:none">--:--</div>
+          <div id="clock" style="font-family:'Bebas Neue';font-size:36px;font-weight:900;color:var(--primary-accent);line-height:1;letter-spacing:-1px">--:--</div>
           <button class="ham-btn" id="hamBtn" onclick="openNavSheet()" aria-label="Menú de navegación">
             <span class="ham-line"></span>
             <span class="ham-line"></span>
@@ -125,45 +125,6 @@
       </div>
     </div>
 
-    <!-- TEST MODAL -->
-    <div class="test-modal" id="testModal">
-      <div class="test-modal-content">
-        <div class="test-handle"></div>
-        <div class="test-modal-header">
-          <span class="test-modal-title">🧪 Simular hora</span>
-          <button class="test-close-btn" onclick="closeTestMenu()"><i class="ti ti-x"></i></button>
-        </div>
-
-        <div class="test-time-big" id="testDisplay">16:00</div>
-
-        <div class="test-pickers">
-          <div class="test-picker-col">
-            <button class="test-step" onclick="adjustSimTime('hour', 1)"><i class="ti ti-chevron-up"></i></button>
-            <span class="test-picker-label">Hora</span>
-            <button class="test-step" onclick="adjustSimTime('hour', -1)"><i class="ti ti-chevron-down"></i></button>
-          </div>
-          <div class="test-picker-sep">:</div>
-          <div class="test-picker-col">
-            <button class="test-step" onclick="adjustSimTime('min', 5)"><i class="ti ti-chevron-up"></i></button>
-            <span class="test-picker-label">Min</span>
-            <button class="test-step" onclick="adjustSimTime('min', -5)"><i class="ti ti-chevron-down"></i></button>
-          </div>
-        </div>
-
-        <div class="test-active" id="mockStatus" style="display:none">
-          <i class="ti ti-clock-play"></i> Simulando <strong id="mockTime">--:--</strong>
-        </div>
-
-        <div class="test-actions">
-          <button class="test-btn test-btn--reset" onclick="disableMock()">
-            <i class="ti ti-refresh"></i> Reset
-          </button>
-          <button class="test-btn test-btn--save" onclick="setMockTime()">
-            <i class="ti ti-check"></i> Guardar hora
-          </button>
-        </div>
-      </div>
-    </div>
   </div>
 
   <!-- SCRIPTS - Módulos ES6 -->

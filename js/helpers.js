@@ -19,21 +19,8 @@ export function getLineupForDay() {
  */
 export function getEventMinutes(t) {
   let nowDate = new Date();
-  let nowMs;
+  let nowMs = nowDate.getTime();
   const festDay = window.festivalDay || 22;
-
-  if (window.isMockActive && window.mockTime != null) {
-    let elapsedMs = Date.now() - window.mockStartReal;
-    let advancedMs = window.mockTime * 60000 + elapsedMs;
-    let mockHour = Math.floor(advancedMs / 3600000) % 24;
-    let mockMin = Math.floor((advancedMs % 3600000) / 60000);
-    let mockSec = Math.floor((advancedMs % 60000) / 1000);
-    let mockDate = new Date(nowDate.getFullYear(), nowDate.getMonth(), festDay);
-    mockDate.setHours(mockHour, mockMin, mockSec, 0);
-    nowMs = mockDate.getTime();
-  } else {
-    nowMs = nowDate.getTime();
-  }
 
   let [h, m] = t.split(':').map(Number);
   let eventDate = new Date(nowDate.getFullYear(), nowDate.getMonth(), festDay);
@@ -121,9 +108,6 @@ export function fmtClock(m) {
  * Obtiene minutos actuales desde midnight
  */
 export function getCurrentMinutes() {
-  if (window.isMockActive && window.mockTime != null) {
-    return window.mockTime + (Date.now() - window.mockStartReal) / 60000;
-  }
   let now = new Date();
   return now.getHours() * 60 + now.getMinutes();
 }
