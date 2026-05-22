@@ -104,7 +104,10 @@ function renderNow() {
 function renderLineup() {
   const stagesOpts = ['Todos', ...STAGES_LIST.map(s => s.name)];
   let currentFilter = window.stageFilter || stageFilter || 'Todos';
-  let pills = stagesOpts.map(s => `<button class="sf-pill ${currentFilter === s ? 'active' : ''}" onclick="setSF('${s}')">${s}</button>`).join('');
+  let pills = stagesOpts.map(s => {
+    const color = s === 'Todos' ? 'var(--primary-accent)' : stageColor(s);
+    return `<button class="sf-pill ${currentFilter === s ? 'active' : ''}" onclick="setSF('${s}')" style="--pill-color:${color}">${s}</button>`;
+  }).join('');
   let filtered = currentFilter === 'Todos' ? getLineupForDay() : getLineupForDay().filter(a => a.stage === currentFilter);
   let sorted = [...filtered].sort((a,b) => toMin(a.start) - toMin(b.start));
   let liveNow = getLineupForDay().filter(a => isNow(a));
@@ -160,38 +163,41 @@ function renderStages() {
     let svHere = [...saved].filter(id => getLineupForDay().find(a => a.id === id && a.stage === st.name)).length;
     let status = nowA ? 'EN VIVO' : (nextArtist ? 'PRÓXIMO' : 'FINALIZADO');
 
-    html += `<div class="stage-card" style="--stage-color:${st.color};background:${st.color}">
-      <div class="sc-header">
-        <div class="sc-title-group">
-          <div class="sc-name">${st.name}</div>
-          <div class="sc-desc">${st.desc}</div>
+    let stub = st.name.substring(0, 4).toUpperCase();
+    let content = nowA ? `
+      <div class="sc-now-playing">
+        <div class="sc-artist-name">${nowA.name}</div>
+        <div class="sc-progress">
+          <div class="sc-progress-bar"><div class="sc-progress-fill" id="st-bar-${si}" style="width:${p}%"></div></div>
+          <div class="sc-progress-text" id="st-meta-${si}">${fmtMin(elMin(nowA))} tocado · ${fmtMin(rem)} restante</div>
         </div>
-        <div class="sc-status-badge ${status.toLowerCase()}">${status}</div>
+        <div class="sc-times"><span>${nowA.start}</span> - <span>${nowA.end}</span></div>
+      </div>` : (nextArtist ? `
+      <div class="sc-next-playing">
+        <div class="sc-next-label">Próximo artista</div>
+        <div class="sc-artist-name">${nextArtist.name}</div>
+        <div class="sc-next-time">En <span id="st-next-${si}">${fmtMin(timeUntilNext)}</span></div>
+        <div class="sc-times"><span>${nextArtist.start}</span> - <span>${nextArtist.end}</span></div>
+      </div>` : `
+      <div class="sc-finished">
+        <div class="sc-finished-text">Este escenario ha finalizado sus presentaciones</div>
+      </div>`);
+
+    html += `<div class="stage-card" style="--stage-color:${st.color};background:${st.color}">
+      <div class="sc-stub">${stub}</div>
+      <div class="sc-body">
+        <div class="sc-header">
+          <div class="sc-title-group">
+            <div class="sc-name">${st.name}</div>
+            <div class="sc-desc">${st.desc}</div>
+          </div>
+          <div class="sc-status-badge ${status.toLowerCase()}">${status}</div>
+        </div>
+        <div class="sc-divider"></div>
+        <div class="sc-content">${content}</div>
+        ${svHere ? `<div class="sc-saved-info">♥ ${svHere} artista${svHere>1?'s':''} guardado${svHere>1?'s':''}</div>` : ''}
+        <button class="sc-lineup-btn" onclick="event.stopPropagation();goStageLineup('${st.name}')">Ver en lineup <i class="ti ti-arrow-right"></i></button>
       </div>
-      <div class="sc-content">
-        ${nowA ? `
-          <div class="sc-now-playing">
-            <div class="sc-artist-name">${nowA.name}</div>
-            <div class="sc-progress">
-              <div class="sc-progress-bar"><div class="sc-progress-fill" id="st-bar-${si}" style="width:${p}%"></div></div>
-              <div class="sc-progress-text" id="st-meta-${si}">${fmtMin(elMin(nowA))} tocado · ${fmtMin(rem)} restante</div>
-            </div>
-            <div class="sc-times"><span>${nowA.start}</span> - <span>${nowA.end}</span></div>
-          </div>
-        ` : (nextArtist ? `
-          <div class="sc-next-playing">
-            <div class="sc-next-label">Próximo artista</div>
-            <div class="sc-artist-name">${nextArtist.name}</div>
-            <div class="sc-next-time">En <span id="st-next-${si}">${fmtMin(timeUntilNext)}</span></div>
-            <div class="sc-times"><span>${nextArtist.start}</span> - <span>${nextArtist.end}</span></div>
-          </div>
-        ` : `
-          <div class="sc-finished">
-            <div class="sc-finished-text">Este escenario ha finalizado sus presentaciones</div>
-          </div>
-        `)}
-      </div>
-      ${svHere ? `<div class="sc-saved-info">♥ ${svHere} artista${svHere>1?'s':''} guardado${svHere>1?'s':''}</div>` : ''}
     </div>`;
   });
   return html;
@@ -469,6 +475,12 @@ function setSF(stage) {
   const c = document.getElementById('content');
   if (c) c.innerHTML = renderLineup();
 }
+
+function goStageLineup(stage) {
+  window.stageFilter = stage;
+  goTab('lineup');
+}
+window.goStageLineup = goStageLineup;
 
 function goNowStage(si) {
   window.curStage = si;
