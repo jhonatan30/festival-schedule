@@ -917,14 +917,11 @@ body.day-23 {
 .lineup-wrap { height: 100%; display: flex; flex-direction: column; }
 .stage-filter-bar {
   display: flex;
+  flex-wrap: wrap;
   gap: 8px;
-  overflow-x: auto;
-  scrollbar-width: none;
   padding: 12px 12px 10px 12px;
   flex-shrink: 0;
-  align-items: center;
 }
-.stage-filter-bar::-webkit-scrollbar { display: none; }
 .sf-pill {
   flex-shrink: 0;
   padding: 4px 10px;
