@@ -245,11 +245,7 @@ function renderMapSVG(highlightStage, compact, routeMode) {
     <line x1="59"  y1="66" x2="59"  y2="152" stroke="rgba(255,184,208,.09)" stroke-width="1.5" stroke-dasharray="5,4"/>
     <line x1="182" y1="66" x2="182" y2="90"  stroke="rgba(255,184,208,.09)" stroke-width="1.5" stroke-dasharray="5,4"/>
     <line x1="110" y1="152" x2="128" y2="140" stroke="rgba(255,184,208,.09)" stroke-width="1.5" stroke-dasharray="5,4"/>
-    <text x="262" y="118" text-anchor="middle" class="map-amenity">Zona de</text>
-    <text x="262" y="129" text-anchor="middle" class="map-amenity">Comidas</text>
-    <text x="320" y="118" text-anchor="middle" class="map-amenity">VIP</text>
-    <text x="320" y="129" text-anchor="middle" class="map-amenity">Lounge</text>
-    ${stagesSVG}
+${stagesSVG}
     <g id="routeArrow"></g>
   </svg>`;
 }
