@@ -89,7 +89,7 @@ function renderNow() {
         if (isHero) {
           stageHTML += `<div class="hero"><div class="hero-shine"></div><div class="hero-grid"></div><div class="hero-top"><div class="live-pill"><div class="live-dot ${isLive ? '' : 'inactive'}"></div><span class="live-txt">${isLive ? 'En escena' : 'Próximo'}</span></div><button class="hero-save-btn" data-artist-id="${a.id}" onclick="toggleSave(${a.id})"><i class="ti ${sv ? 'ti-heart-filled' : 'ti-heart'}"></i></button></div><div class="hero-name">${a.name}${a.extra ? `<span class="hero-extra">${a.extra}</span>` : ''}</div><div class="hero-sub">${st.name} · ${a.start} → ${a.end}</div><div class="hero-tags">${a.tags.map(t => `<span class="hero-tag">${t}</span>`).join('')}</div>${isLive ? progressHTML(a, si) : countdownHTML(a, si)}</div>`;
         } else {
-          stageHTML += `<div class="ac ${sv ? 'sv' : ''} ${isPast ? 'passed' : ''}"><div class="ac-tb"><div class="ac-t">${a.start}</div><div class="ac-te">→${a.end}</div></div><div class="ac-b"><div class="ac-n">${a.name}</div><div class="ac-s">${a.tags.join(' · ')}</div></div><button class="ac-btn" data-artist-id="${a.id}" onclick="toggleSave(${a.id})"><i class="ti ${sv ? 'ti-heart-filled' : 'ti-heart'}"></i></button></div>`;
+          stageHTML += `<div class="ac ${sv ? 'sv' : ''} ${isPast ? 'passed' : ''}"><div class="ac-dot" style="background:${st.color};box-shadow:0 0 8px ${st.color}55"></div><div class="ac-b"><div class="ac-n">${a.name}</div><div class="ac-s">${a.tags.join(' · ')}</div></div><div class="ac-right"><div class="ac-t">${a.start}</div><div class="ac-te">→${a.end}</div><button class="ac-btn" data-artist-id="${a.id}" onclick="toggleSave(${a.id})"><i class="ti ${sv ? 'ti-heart-filled' : 'ti-heart'}"></i></button></div></div>`;
         }
       });
       if (!heroArtist) {
@@ -116,7 +116,7 @@ function renderLineup() {
   let liveBar = liveNow.length ? `<div class="live-now-bar"><span class="live-dot" style="width:7px;height:7px;border-radius:50%;background:var(--primary-accent);animation:blink 1.3s infinite;display:inline-block;margin-right:6px;vertical-align:middle"></span>${liveNow.length} set${liveNow.length > 1 ? 's' : ''} en vivo ahora</div>` : '';
   let body = liveBar;
   let hours = Object.keys(groups).sort((a,b) => {let ah = parseInt(a) < 15 ? parseInt(a)+24 : parseInt(a); let bh = parseInt(b) < 15 ? parseInt(b)+24 : parseInt(b); return ah - bh;});
-  hours.forEach(h => {body += `<div class="time-divider"><span class="time-divider-lbl">${h}:00</span><div class="time-divider-line"></div></div>`; groups[h].forEach(a => {let sv = saved.has(a.id), np = isNow(a), conf = hasConflict(a); let sc = stageColor(a.stage); let stageSafe = a.stage.toLowerCase().replace(/\s+/g, '-'); let badges = ''; if (np) badges += `<span class="badge-live">En vivo · <span id="bl-rem-${a.id}">${fmtMin(remMin(a))}</span></span>`; if (conf) badges += `<span class="badge-conflict">⚡ Conflicto</span>`; body += `<div class="lc ${sv ? 'sv' : ''} ${np ? 'np' : ''} stage-${stageSafe}" style="${np ? '--np-c:'+sc : ''}; --stage-border-color: ${sc}"><div class="lc-tb"><div class="lc-ts">${a.start}</div><div class="lc-te">→${a.end}</div></div><div class="lc-b"><div class="lc-n">${a.name}</div><div class="lc-stg" style="color:${sc}">${a.stage}</div><div class="lc-row">${badges}${a.tags.map(t => `<span class="lc-tag">${t}</span>`).join('')}</div></div><button class="lc-sv-btn ${sv ? 'on' : ''}" data-artist-id="${a.id}" onclick="toggleSave(${a.id})"><i class="ti ${sv ? 'ti-heart-filled' : 'ti-heart'}"></i></button></div>`;});});
+  hours.forEach(h => {body += `<div class="time-divider"><span class="time-divider-lbl">${h}:00</span><div class="time-divider-line"></div></div>`; groups[h].forEach(a => {let sv = saved.has(a.id), np = isNow(a), conf = hasConflict(a); let sc = stageColor(a.stage); let stageSafe = a.stage.toLowerCase().replace(/\s+/g, '-'); let badges = ''; if (np) badges += `<span class="badge-live">En vivo · <span id="bl-rem-${a.id}">${fmtMin(remMin(a))}</span></span>`; if (conf) badges += `<span class="badge-conflict">⚡ Conflicto</span>`; body += `<div class="lc ${sv ? 'sv' : ''} ${np ? 'np' : ''} stage-${stageSafe}"${np ? ` style="--np-c:${sc}"` : ''}><div class="lc-dot" style="background:${sc};box-shadow:0 0 8px ${sc}55"></div><div class="lc-b"><div class="lc-n">${a.name}</div><div class="lc-stg" style="color:${sc}">${a.stage}</div><div class="lc-row">${badges}${a.tags.map(t => `<span class="lc-tag">${t}</span>`).join('')}</div></div><div class="lc-right"><div class="lc-time">${a.start}</div><div class="lc-time-end">→${a.end}</div><button class="lc-sv-btn ${sv ? 'on' : ''}" data-artist-id="${a.id}" onclick="toggleSave(${a.id})"><i class="ti ${sv ? 'ti-heart-filled' : 'ti-heart'}"></i></button></div></div>`;});});
   return `<div class="lineup-wrap"><div class="stage-filter-bar">${pills}</div><div class="lineup-list">${body}</div></div>`;
 }
 
@@ -143,7 +143,7 @@ function renderAgenda() {
       let badges = '';
       if (np) badges += `<span class="badge-live">En vivo · <span id="bl-rem-${a.id}">${fmtMin(remMin(a))}</span></span>`;
       if (conf) badges += `<span class="badge-conflict">⚡ Conflicto</span>`;
-      body += `<div class="lc ${sv ? 'sv' : ''} ${np ? 'np' : ''} stage-${stageSafe}" style="${np ? '--np-c:'+sc : ''}; --stage-border-color: ${sc}"><div class="lc-tb"><div class="lc-ts">${a.start}</div><div class="lc-te">→${a.end}</div></div><div class="lc-b"><div class="lc-n">${a.name}</div><div class="lc-stg" style="color:${sc}">${a.stage}</div><div class="lc-row">${badges}${a.tags.map(t => `<span class="lc-tag">${t}</span>`).join('')}</div></div><button class="lc-sv-btn ${sv ? 'on' : ''}" data-artist-id="${a.id}" onclick="toggleSave(${a.id})"><i class="ti ${sv ? 'ti-heart-filled' : 'ti-heart'}"></i></button></div>`;
+      body += `<div class="lc ${sv ? 'sv' : ''} ${np ? 'np' : ''} stage-${stageSafe}"${np ? ` style="--np-c:${sc}"` : ''}><div class="lc-dot" style="background:${sc};box-shadow:0 0 8px ${sc}55"></div><div class="lc-b"><div class="lc-n">${a.name}</div><div class="lc-stg" style="color:${sc}">${a.stage}</div><div class="lc-row">${badges}${a.tags.map(t => `<span class="lc-tag">${t}</span>`).join('')}</div></div><div class="lc-right"><div class="lc-time">${a.start}</div><div class="lc-time-end">→${a.end}</div><button class="lc-sv-btn ${sv ? 'on' : ''}" data-artist-id="${a.id}" onclick="toggleSave(${a.id})"><i class="ti ${sv ? 'ti-heart-filled' : 'ti-heart'}"></i></button></div></div>`;
     });
   });
 
@@ -183,7 +183,7 @@ function renderStages() {
         <div class="sc-finished-text">Este escenario ha finalizado sus presentaciones</div>
       </div>`);
 
-    html += `<div class="stage-card" style="--stage-color:${st.color};background:${st.color}">
+    html += `<div class="stage-card" style="--stage-color:${st.color}">
       <div class="sc-stub">${stub}</div>
       <div class="sc-body">
         <div class="sc-header">

@@ -839,31 +839,28 @@ body.day-23 {
 
 /* artist mini card (next up) */
 .ac {
-  background: rgba(255,184,208,.07);
-  border: 1px solid rgba(255,184,208,.12);
-  border-radius: 14px;
-  padding: 12px 14px;
+  background: rgba(255,255,255,.05);
+  border: 1px solid rgba(255,255,255,.07);
+  border-radius: 16px;
+  padding: 16px;
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: 14px;
   cursor: pointer;
   transition: transform .14s, background .14s;
   -webkit-user-select: none;
 }
 .ac:active { transform: scale(.975); }
-.ac.sv { background: var(--sc); border-color: transparent; }
-.ac.sv .ac-n, .ac.sv .ac-t, .ac.sv .ac-te { color: #fff; }
-.ac.sv .ac-s { color: rgba(255,255,255,.55); }
-.ac.sv .ac-te { color: rgba(255,255,255,.5); }
-.ac.sv .ac-btn { color: #fff; }
-.ac-tb { min-width: 46px; flex-shrink: 0; text-align: center; }
-.ac-t { font-size: 15px; font-weight: 700; color: var(--primary-accent); line-height: 1; }
-.ac-te { font-size: 10px; color: rgba(255,184,208,.42); margin-top: 2px; }
+.ac.sv { background: rgba(255,255,255,.09); border-color: rgba(255,255,255,.13); }
+.ac-dot {
+  width: 10px; height: 10px; border-radius: 50%;
+  flex-shrink: 0; align-self: flex-start; margin-top: 7px;
+}
 .ac-b { flex: 1; min-width: 0; }
 .ac-n {
   font-family: 'Bebas Neue', sans-serif;
-  font-size: 21px;
-  color: var(--primary-accent);
+  font-size: 26px;
+  color: #fff;
   line-height: 1;
   letter-spacing: .3px;
   white-space: nowrap;
@@ -871,31 +868,29 @@ body.day-23 {
   text-overflow: ellipsis;
 }
 .ac-s {
-  font-size: 9px; font-weight: 700;
-  color: rgba(255,184,208,.42);
+  font-size: 11px; font-weight: 600;
+  color: rgba(255,255,255,.38);
   text-transform: uppercase;
-  letter-spacing: .8px;
-  margin-top: 2px;
+  letter-spacing: .5px;
+  margin-top: 3px;
 }
+.ac-right {
+  display: flex; flex-direction: column; align-items: flex-end; gap: 3px; flex-shrink: 0;
+}
+.ac-t {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 24px; color: var(--primary-accent); line-height: 1; letter-spacing: .5px;
+}
+.ac-te { font-size: 10px; color: rgba(255,255,255,.3); }
 .ac-btn {
   background: transparent; border: none; cursor: pointer;
-  padding: 5px; color: rgba(255,184,208,.45);
-  font-size: 19px; flex-shrink: 0;
+  padding: 4px; color: rgba(255,184,208,.4);
+  font-size: 18px;
   transition: transform .18s;
 }
 .ac-btn:active { transform: scale(1.2); }
-.ac.passed {
-  opacity: 0.4;
-  background: rgba(255,184,208,.03);
-  border-color: rgba(255,184,208,.06);
-}
-.ac.passed .ac-n,
-.ac.passed .ac-t,
-.ac.passed .ac-te,
-.ac.passed .ac-s {
-  text-decoration: line-through;
-  color: rgba(255,184,208,.3);
-}
+.ac.passed { opacity: 0.38; }
+.ac.passed .ac-n { text-decoration: line-through; color: rgba(255,255,255,.4); }
 
 /* swipe hint */
 .sw-hint {
@@ -989,37 +984,46 @@ body.day-23 {
 .time-divider-line { height: 1px; background: rgba(255,184,208,.09); flex: 1; }
 
 .lc {
-  background: rgba(255,184,208,.07);
-  border: 1px solid rgba(255,184,208,.15);
-  border-left: 4px solid var(--stage-border-color, rgba(255,184,208,.4));
-  border-radius: 14px;
-  padding: 12px 14px;
-  display: flex; align-items: center; gap: 12px;
-  margin-bottom: 7px; cursor: pointer;
-  transition: transform .14s, background .15s, border-color .15s;
+  background: rgba(255,255,255,.05);
+  border: 1px solid rgba(255,255,255,.07);
+  border-radius: 16px;
+  padding: 16px;
+  display: flex; align-items: center; gap: 14px;
+  margin-bottom: 8px; cursor: pointer;
+  transition: transform .14s, background .15s;
   position: relative;
 }
 .lc:active { transform: scale(.98); }
-.lc.sv { background: rgba(255,184,208,.12); }
-.lc.np { box-shadow: 0 0 0 1.5px var(--np-c); }
-.lc-tb { min-width: 46px; flex-shrink: 0; text-align: center; }
-.lc-ts { font-size: 14px; font-weight: 700; color: var(--primary-accent); line-height: 1; }
-.lc-te { font-size: 10px; color: rgba(255,184,208,.38); margin-top: 2px; }
+.lc.sv { background: rgba(255,255,255,.09); border-color: rgba(255,255,255,.13); }
+.lc.np { outline: 1.5px solid var(--np-c); }
+.lc-dot {
+  width: 10px; height: 10px; border-radius: 50%;
+  flex-shrink: 0; align-self: flex-start; margin-top: 7px;
+}
 .lc-b { flex: 1; min-width: 0; }
 .lc-n {
   font-family: 'Bebas Neue', sans-serif;
-  font-size: 21px; color: var(--primary-accent); line-height: 1;
+  font-size: 24px; color: #fff; line-height: 1;
+  letter-spacing: .3px;
   white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
 }
-.lc-stg { font-size: 9px; font-weight: 700; text-transform: uppercase; letter-spacing: .8px; margin-top: 2px; }
+.lc-stg { font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: .5px; margin-top: 3px; }
 .lc-row { display: flex; gap: 4px; flex-wrap: wrap; margin-top: 5px; align-items: center; }
 .lc-tag {
-  background: rgba(255,184,208,.09);
-  color: rgba(255,184,208,.55);
+  background: rgba(255,255,255,.07);
+  color: rgba(255,255,255,.38);
   font-size: 8px; font-weight: 700;
   padding: 2px 6px; border-radius: 8px;
   text-transform: uppercase; letter-spacing: .4px;
 }
+.lc-right {
+  display: flex; flex-direction: column; align-items: flex-end; gap: 3px; flex-shrink: 0;
+}
+.lc-time {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 22px; color: #fff; line-height: 1; letter-spacing: .5px;
+}
+.lc-time-end { font-size: 10px; color: rgba(255,255,255,.3); }
 .badge-live {
   background: var(--accent-live); color: #fff;
   font-size: 8px; font-weight: 700;
@@ -1046,8 +1050,8 @@ body.day-23 {
 }
 .lc-sv-btn {
   background: transparent; border: none; cursor: pointer;
-  padding: 5px; color: rgba(255,184,208,.38);
-  font-size: 19px; flex-shrink: 0;
+  padding: 4px; color: rgba(255,184,208,.38);
+  font-size: 18px;
   transition: transform .18s, color .15s;
 }
 .lc-sv-btn.on { color: var(--primary-accent); }
@@ -1122,8 +1126,8 @@ body.day-23 {
 /* STAGE CARD — diseño boleta/ticket */
 .stage-card {
   display: flex;
-  background: var(--stage-color);
-  border: none;
+  background: rgba(255,255,255,.05);
+  border: 1px solid rgba(255,255,255,.08);
   border-radius: 16px;
   margin-bottom: 12px;
   overflow: hidden;
@@ -1134,8 +1138,8 @@ body.day-23 {
 .sc-stub {
   width: 44px;
   flex-shrink: 0;
-  background: rgba(0,0,0,.3);
-  border-right: 2px dashed rgba(255,255,255,.22);
+  background: var(--stage-color);
+  border-right: 2px dashed rgba(255,255,255,.2);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -1151,7 +1155,6 @@ body.day-23 {
 .sc-body {
   flex: 1;
   padding: 14px 16px;
-  background: rgba(0,0,0,.15);
   min-width: 0;
 }
 
