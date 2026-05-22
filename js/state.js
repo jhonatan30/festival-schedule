@@ -13,10 +13,6 @@ export let stageFilter = 'Todos';
 export let hintGone = false;
 export let swipeListenersAttached = false;
 
-// Mock/Testing State
-export let mockTime = null;
-export let isMockActive = false;
-
 // Intervals
 export let contentUpdateInterval = null;
 
@@ -41,8 +37,6 @@ export function resetState() {
   stageFilter = 'Todos';
   hintGone = false;
   swipeListenersAttached = false;
-  mockTime = null;
-  isMockActive = false;
   festivalDay = 22;
   localStorage.clear();
 }
