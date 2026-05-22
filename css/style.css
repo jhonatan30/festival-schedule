@@ -247,10 +247,10 @@ body.day-23 {
   justify-content: center;
   gap: 8px;
   font-family: 'Bebas Neue', sans-serif;
-  font-size: 13px;
+  font-size: 18px;
   letter-spacing: 1.5px;
 }
-#hdrSectionIcon { font-size: 11px; color: var(--primary-accent); }
+#hdrSectionIcon { font-size: 14px; color: var(--primary-accent); }
 #hdrSectionName { color: var(--primary-accent); }
 
 /* ── HAMBURGER BUTTON ── */
@@ -916,31 +916,32 @@ body.day-23 {
 ════════════════════════════════════ */
 .lineup-wrap { height: 100%; display: flex; flex-direction: column; }
 .stage-filter-bar {
-  display: flex;
-  flex-wrap: wrap;
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
   gap: 8px;
-  padding: 12px 12px 10px 12px;
+  padding: 12px;
   flex-shrink: 0;
 }
 .sf-pill {
-  flex-shrink: 0;
-  padding: 4px 10px;
+  padding: 6px 4px;
   border-radius: 16px;
   font-size: 9px;
   font-weight: 700;
   cursor: pointer;
-  border: 1.5px solid rgba(255,184,208,.25);
-  color: rgba(255,184,208,.55);
+  border: 1.5px solid var(--pill-color, var(--primary-accent));
+  color: var(--pill-color, var(--primary-accent));
   background: transparent;
   transition: all .15s;
   text-transform: uppercase;
   letter-spacing: .3px;
-  white-space: nowrap;
+  text-align: center;
+  opacity: 0.65;
 }
 .sf-pill.active {
-  background: var(--primary-accent);
-  border-color: var(--primary-accent);
+  background: var(--pill-color, var(--primary-accent));
+  border-color: var(--pill-color, var(--primary-accent));
   color: #0d1b3d;
+  opacity: 1;
 }
 
 .disclaimer-box {
@@ -1118,25 +1119,46 @@ body.day-23 {
   padding: 10px 16px 20px;
   -webkit-overflow-scrolling: touch;
 }
-/* STAGE CARD */
+/* STAGE CARD — diseño boleta/ticket */
 .stage-card {
+  display: flex;
   background: var(--stage-color);
   border: none;
-  border-radius: 12px;
-  padding: 12px 14px;
-  margin-bottom: 10px;
-  cursor: pointer;
-  transition: all .2s ease;
-  position: relative;
+  border-radius: 16px;
+  margin-bottom: 12px;
   overflow: hidden;
+  transition: transform .2s;
 }
 .stage-card:active { transform: scale(.97); }
-.stage-card::before {
-  content: '';
-  position: absolute;
-  inset: 0;
-  background: rgba(0,0,0,.25);
-  pointer-events: none;
+
+.sc-stub {
+  width: 44px;
+  flex-shrink: 0;
+  background: rgba(0,0,0,.3);
+  border-right: 2px dashed rgba(255,255,255,.22);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  writing-mode: vertical-lr;
+  text-orientation: mixed;
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 15px;
+  letter-spacing: 4px;
+  color: rgba(255,255,255,.55);
+  padding: 12px 0;
+}
+
+.sc-body {
+  flex: 1;
+  padding: 14px 16px;
+  background: rgba(0,0,0,.15);
+  min-width: 0;
+}
+
+.sc-divider {
+  border: none;
+  border-top: 1px dashed rgba(255,255,255,.2);
+  margin: 10px 0;
 }
 
 .sc-header {
@@ -1144,20 +1166,13 @@ body.day-23 {
   justify-content: space-between;
   align-items: flex-start;
   gap: 10px;
-  margin-bottom: 10px;
-  border-bottom: 1px solid rgba(255,255,255,.15);
-  padding-bottom: 10px;
-  position: relative;
-  z-index: 2;
 }
 
-.sc-title-group {
-  flex: 1;
-}
+.sc-title-group { flex: 1; min-width: 0; }
 
 .sc-name {
   font-family: 'Bebas Neue', sans-serif;
-  font-size: 20px;
+  font-size: 24px;
   color: #fff;
   line-height: 1;
   letter-spacing: -.3px;
@@ -1182,18 +1197,14 @@ body.day-23 {
   white-space: nowrap;
   background: rgba(0,0,0,.3);
   color: rgba(255,255,255,.85);
-  text-align: center;
+  flex-shrink: 0;
 }
 
 .sc-status-badge.en { background: rgba(34,197,94,.9); color: #fff; }
 .sc-status-badge.próximo { background: rgba(255,193,7,.85); color: #000; }
 .sc-status-badge.finalizado { background: rgba(0,0,0,.35); color: rgba(255,255,255,.6); }
 
-.sc-content {
-  position: relative;
-  z-index: 2;
-  font-size: 12px;
-}
+.sc-content { font-size: 12px; }
 
 .sc-now-playing,
 .sc-next-playing,
@@ -1203,7 +1214,7 @@ body.day-23 {
 
 .sc-artist-name {
   font-family: 'Bebas Neue', sans-serif;
-  font-size: 16px;
+  font-size: 28px;
   color: #fff;
   line-height: 1.1;
   margin-bottom: 6px;
@@ -1226,9 +1237,7 @@ body.day-23 {
   margin: 6px 0;
 }
 
-.sc-progress {
-  margin: 8px 0;
-}
+.sc-progress { margin: 8px 0; }
 
 .sc-progress-bar {
   height: 4px;
@@ -1273,13 +1282,31 @@ body.day-23 {
 .sc-saved-info {
   font-size: 9px;
   font-weight: 700;
-  color: #EF4444;
-  margin-top: 10px;
-  padding-top: 6px;
-  border-top: 1px solid rgba(255,255,255,.15);
-  position: relative;
-  z-index: 2;
+  color: rgba(255,255,255,.8);
+  margin-top: 8px;
 }
+
+.sc-lineup-btn {
+  margin-top: 12px;
+  width: 100%;
+  background: rgba(255,255,255,.1);
+  border: 1px solid rgba(255,255,255,.25);
+  border-radius: 10px;
+  padding: 8px;
+  cursor: pointer;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: .5px;
+  color: rgba(255,255,255,.85);
+  text-transform: uppercase;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  transition: background .15s;
+  box-sizing: border-box;
+}
+.sc-lineup-btn:active { background: rgba(255,255,255,.2); }
 
 
 /* ── BOTTOM NAV (reservado para futuro uso) ── */
