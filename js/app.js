@@ -6,7 +6,7 @@
 import { STAGES_LIST, LINEUP, LINEUP_DAY23 } from './config.js';
 import {
   saved, curTab, curStage, stageFilter, hintGone, swipeListenersAttached,
-  mockTime, isMockActive, contentUpdateInterval, festivalDay,
+  contentUpdateInterval, festivalDay,
   updateSavedState
 } from './state.js';
 import {
@@ -22,12 +22,6 @@ window.setSF = setSF;
 window.goNowStage = goNowStage;
 window.openLegalModal = openLegalModal;
 window.closeLegalModal = closeLegalModal;
-window.openTestMenu = openTestMenu;
-window.closeTestMenu = closeTestMenu;
-window.setMockTime = setMockTime;
-window.disableMock = disableMock;
-window.onClockClick = onClockClick;
-window.adjustSimTime = adjustSimTime;
 window.hideConflictToast = hideConflictToast;
 window.showAgendaRoute = showAgendaRoute;
 window.closeAgendaRoute = closeAgendaRoute;
@@ -540,13 +534,8 @@ function updateClock() {
   let el = document.getElementById('clock');
   if (el) {
     el.textContent = fmtClock(getCurrentMinutes());
-    if (window.isMockActive) {
-      el.style.color = 'var(--accent-live)';
-      el.style.fontWeight = '900';
-    } else {
-      el.style.color = 'var(--primary-accent)';
-      el.style.fontWeight = '400';
-    }
+    el.style.color = 'var(--primary-accent)';
+    el.style.fontWeight = '400';
   }
   updateNowLive();
 }
@@ -587,98 +576,12 @@ function updateNowLive() {
   });
 }
 
-function onClockClick() {
-  const modal = document.getElementById('testModal');
-  if (modal && modal.classList.contains('open')) return;
-  const now = Date.now();
-  if (!window.clockTaps) window.clockTaps = [];
-  const taps = window.clockTaps;
-
-  // Reset if too long since last tap
-  if (taps.length > 0 && now - taps[taps.length - 1] > 3000) {
-    window.clockTaps = [now];
-    return;
-  }
-
-  taps.push(now);
-  if (taps.length < 5) return;
-
-  // Pattern: ●●●  ●●  (3 fast taps, pause, 2 fast taps)
-  const [t1, t2, t3, t4, t5] = taps.slice(-5);
-  if (t2 - t1 < 500 && t3 - t2 < 500 && t4 - t3 >= 600 && t5 - t4 < 500) {
-    window.clockTaps = [];
-    openTestMenu();
-  } else {
-    window.clockTaps = taps.slice(-4);
-  }
-}
-
 function openLegalModal() {
   document.getElementById('legalModal').style.display = 'flex';
 }
 
 function closeLegalModal() {
   document.getElementById('legalModal').style.display = 'none';
-}
-
-function openTestMenu() {
-  if (window.isMockActive && window.mockTime != null) {
-    window.simHour = Math.floor(window.mockTime / 60);
-    window.simMin = window.mockTime % 60;
-  } else {
-    const mins = getCurrentMinutes();
-    let h = Math.floor(mins / 60);
-    let m = Math.round((mins % 60) / 5) * 5;
-    if (m >= 60) { h++; m = 0; }
-    window.simHour = Math.min(27, Math.max(15, h));
-    window.simMin = Math.min(55, Math.max(0, m));
-  }
-  updateDisplay();
-  const modal = document.getElementById('testModal');
-  modal.classList.remove('open');
-  void modal.offsetWidth; // force reflow so the CSS animation restarts each time
-  modal.classList.add('open');
-}
-
-function adjustSimTime(field, delta) {
-  if (field === 'hour') {
-    window.simHour = Math.min(27, Math.max(15, (window.simHour || 16) + delta));
-  } else {
-    window.simMin = (((window.simMin || 0) + delta) + 60) % 60;
-  }
-  updateDisplay();
-}
-
-function closeTestMenu() {
-  document.getElementById('testModal').classList.remove('open');
-}
-
-function setMockTime() {
-  window.mockTime = (window.simHour || 16) * 60 + (window.simMin || 0);
-  window.mockStartReal = Date.now();
-  window.isMockActive = true;
-  const badge = document.getElementById('mockStatus');
-  if (badge) badge.style.display = 'flex';
-  const mt = document.getElementById('mockTime');
-  if (mt) mt.textContent = String((window.simHour || 16) % 24).padStart(2,'0') + ':' + String(window.simMin || 0).padStart(2,'0');
-  updateClock();
-  goTab(window.curTab);
-  closeTestMenu();
-}
-
-function disableMock() {
-  window.isMockActive = false;
-  window.mockTime = null;
-  const badge = document.getElementById('mockStatus');
-  if (badge) badge.style.display = 'none';
-  updateClock();
-  goTab(window.curTab);
-  closeTestMenu();
-}
-
-function updateDisplay() {
-  const display = document.getElementById('testDisplay');
-  if (display) display.textContent = String((window.simHour || 16) % 24).padStart(2,'0') + ':' + String(window.simMin || 0).padStart(2,'0');
 }
 
 function showConflictToast(a, b) {
@@ -696,12 +599,6 @@ function hideConflictToast() {
 
 // ═══════════════════════════════ INICIALIZACIÓN ═══════════════════════════════
 
-document.addEventListener('click', (e) => {
-  let modal = document.getElementById('testModal');
-  if (modal && modal.classList.contains('open') && e.target === modal) {
-    closeTestMenu();
-  }
-});
 
 document.body.classList.add(`day-${window.festivalDay}`);
 setDayStyles(window.festivalDay);
