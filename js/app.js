@@ -110,7 +110,6 @@ function renderLineup() {
   let liveNow = getLineupForDay().filter(a => isNow(a));
   let groups = {};
   sorted.forEach(a => {let h = a.start.split(':')[0]; if (!groups[h]) groups[h] = []; groups[h].push(a);});
-  let conflicts = [...saved].filter(id => hasConflict(getLineupForDay().find(a => a.id === id)));
   let liveBar = liveNow.length ? `<div class="live-now-bar"><span class="live-dot" style="width:7px;height:7px;border-radius:50%;background:var(--primary-accent);animation:blink 1.3s infinite;display:inline-block;margin-right:6px;vertical-align:middle"></span>${liveNow.length} set${liveNow.length > 1 ? 's' : ''} en vivo ahora</div>` : '';
   let body = liveBar;
   let hours = Object.keys(groups).sort((a,b) => {let ah = parseInt(a) < 15 ? parseInt(a)+24 : parseInt(a); let bh = parseInt(b) < 15 ? parseInt(b)+24 : parseInt(b); return ah - bh;});
