@@ -1519,6 +1519,85 @@ body.day-23 {
   padding: 10px 10px 0;
   flex-shrink: 0;
 }
+
+/* ── MAP CAROUSEL ── */
+.map-carousel {
+  flex-shrink: 0;
+  overflow: hidden;
+  padding: 10px 10px 0;
+}
+.map-carousel-track {
+  display: flex;
+  transition: transform .35s cubic-bezier(.4,0,.2,1);
+}
+.map-carousel-slide {
+  flex: 0 0 100%;
+  min-width: 0;
+  padding: 0;
+}
+.map-carousel-slide.route-map-mini {
+  padding: 0;
+}
+.map-carousel-dots {
+  display: flex;
+  justify-content: center;
+  gap: 6px;
+  padding: 6px 0 2px;
+}
+.map-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: rgba(255,184,208,.2);
+  border: none;
+  cursor: pointer;
+  padding: 0;
+  transition: background .2s, transform .2s;
+}
+.map-dot.active {
+  background: var(--primary-accent);
+  transform: scale(1.3);
+}
+
+/* ── 3D MAP SCENE ── */
+.map-3d-scene {
+  width: 100%;
+  padding-bottom: 56.6%;
+  position: relative;
+  background: rgba(5,10,30,.85);
+  border-radius: 14px;
+  overflow: hidden;
+  perspective: 380px;
+}
+.map-3d-world {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  transform-style: preserve-3d;
+  transform-origin: center center;
+  animation: map-spin 14s linear infinite;
+}
+@keyframes map-spin {
+  from { transform: rotateX(52deg) rotateZ(0deg); }
+  to   { transform: rotateX(52deg) rotateZ(360deg); }
+}
+.map-3d-stage {
+  position: absolute;
+  border-radius: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.map-3d-label {
+  font-family: 'Bebas Neue';
+  font-size: 11px;
+  letter-spacing: 1px;
+  color: rgba(255,255,255,.8);
+  text-shadow: 0 0 8px rgba(0,0,0,.9);
+  pointer-events: none;
+}
+
 .route-timeline {
   padding: 14px 16px 32px;
   flex: 1;
